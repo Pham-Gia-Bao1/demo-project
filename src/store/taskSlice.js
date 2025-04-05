@@ -1,12 +1,12 @@
-import { createSlice } from '@reduxjs/toolkit';
-import { taskService } from '../services/taskService';
+import { createSlice } from "@reduxjs/toolkit";
+import { taskService } from "../services/taskService";
 
 const initialState = {
   tasks: taskService.getTasks(),
 };
 
 const taskSlice = createSlice({
-  name: 'tasks',
+  name: "tasks",
   initialState,
   reducers: {
     addTask: (state, action) => {
@@ -18,8 +18,11 @@ const taskSlice = createSlice({
     deleteTask: (state, action) => {
       state.tasks = taskService.deleteTask(state.tasks, action.payload);
     },
+    searchTask: (state, action) => {
+      state.tasks = taskService.searchTask(state.tasks, action.payload);
+    },
   },
 });
 
-export const { addTask, updateTask, deleteTask } = taskSlice.actions;
+export const { addTask, updateTask, deleteTask, searchTask } = taskSlice.actions;
 export default taskSlice.reducer;

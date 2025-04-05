@@ -8,7 +8,7 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import useTaskHandlers from "../../handlers/useTaskHandlers";
 import { DeleteOutlined } from "@ant-design/icons";
 import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
-import "react-big-calendar/lib/addons/dragAndDrop/styles.css"; // Thêm dòng này
+import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
 
 const DnDCalendar = withDragAndDrop(Calendar);
 
@@ -31,61 +31,47 @@ const HomePage = ({ isLoggedIn, user }) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(null);
   const [form] = Form.useForm();
-  const [selectedDate, setSelectedDate] = useState(moment()); // Thêm state để đồng bộ ngày
+  const [selectedDate, setSelectedDate] = useState(moment());
+  const [searchTerm, setSearchTerm] = useState("");
 
   const {
     handleAddTask,
     handleEditTask,
     handleUpdateTask,
     handleDeleteTask,
+    handleSearchTask,
     confirmDelete,
+    handleAddSubmit,
+    handleEditSubmit,
   } = useTaskHandlers(
     setNewTask,
     setEditTask,
     setShowAddModal,
     setShowEditModal,
-    setShowDeleteModal
+    setShowDeleteModal,
+    form,
+    editTask
   );
 
-  // Chuyển đổi tasks thành events cho calendar
+  // Chuyển đổi tasks thành sự kiện lịch với giờ
   const calendarEvents = tasks.map((task) => ({
     id: task.id,
     title: task.title,
-    start: new Date(task.date),
-    end: new Date(task.date),
-    allDay: true,
+    start: moment(task.date).toDate(),
+    end: moment(task.date).toDate(), // Có thể thêm duration nếu cần
     resource: { status: task.status, priority: task.priority },
   }));
 
-  // Xử lý kéo thả sự kiện trên calendar
+  // Xử lý kéo thả sự kiện trên lịch
   const handleEventDrop = ({ event, start }) => {
     const updatedTask = {
       ...tasks.find((t) => t.id === event.id),
-      date: moment(start).format("YYYY-MM-DD"),
+      date: moment(start).format("YYYY-MM-DD HH:mm"),
     };
     handleUpdateTask({ preventDefault: () => {} }, updatedTask);
   };
 
-  // Xử lý submit khi thêm task
-  const handleAddSubmit = (values) => {
-    const formattedDate = values.date.format("YYYY-MM-DD");
-    handleAddTask(
-      { preventDefault: () => {} },
-      { ...values, date: formattedDate }
-    );
-    form.resetFields();
-  };
-
-  // Xử lý submit khi chỉnh sửa task
-  const handleEditSubmit = (values) => {
-    const formattedDate = values.date.format("YYYY-MM-DD");
-    handleUpdateTask(
-      { preventDefault: () => {} },
-      { ...editTask, ...values, date: formattedDate }
-    );
-  };
-
-  // Xử lý khi chọn một sự kiện trên calendar
+  // Xử lý khi chọn một sự kiện trên lịch
   const handleSelectEvent = (event) => {
     form.resetFields();
     const task = tasks.find((t) => t.id === event.id);
@@ -93,20 +79,25 @@ const HomePage = ({ isLoggedIn, user }) => {
       const taskWithMomentDate = { ...task, date: moment(task.date) };
       handleEditTask(taskWithMomentDate);
       form.setFieldsValue(taskWithMomentDate);
+      setSelectedDate(moment(task.date)); // Đồng bộ selectedDate
     }
   };
 
   // Mở modal thêm task
   const openAddModal = () => {
     form.resetFields();
+    setNewTask({ title: "", status: "", priority: "", date: null });
+    setSelectedDate(moment());
     setShowAddModal(true);
   };
 
+  // Component hiển thị sự kiện trên lịch
   const EventComponent = ({ event, handleDeleteTask }) => (
-
     <div className="event-container">
       <div>
-        <span className="event-title">{event.title}</span>
+        <span className="event-title">
+          {event.title} ({moment(event.start).format("HH:mm")})
+        </span>
         <DeleteOutlined
           onClick={(e) => {
             e.stopPropagation();
@@ -115,11 +106,8 @@ const HomePage = ({ isLoggedIn, user }) => {
           className="event-delete-icon"
         />
       </div>
-      <p>{event.title}</p>
-      <p>{event.status}</p>
     </div>
   );
-
 
   return (
     <main className="homepage">
@@ -149,7 +137,7 @@ const HomePage = ({ isLoggedIn, user }) => {
 
       {isLoggedIn && (
         <div className="task-manager">
-          <div style={{ display: "flex", justifyContent: "center" }}>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
             <div className="searchBox">
               <Button
                 type="primary"
@@ -158,9 +146,17 @@ const HomePage = ({ isLoggedIn, user }) => {
               >
                 Thêm công việc mới
               </Button>
-              <div className="search-bar">
+              <div className="search-bar" style={{ marginLeft: 16 }}>
                 <span className="search-icon">🔍</span>
-                <input type="text" placeholder="Search" />
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm công việc"
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    handleSearchTask(e.target.value);
+                  }}
+                />
               </div>
             </div>
           </div>
@@ -214,11 +210,14 @@ const HomePage = ({ isLoggedIn, user }) => {
               </Form.Item>
               <Form.Item
                 name="date"
-                label="Ngày"
-                rules={[{ required: true, message: "Vui lòng chọn ngày!" }]}
+                label="Ngày và Giờ"
+                rules={[
+                  { required: true, message: "Vui lòng chọn ngày và giờ!" },
+                ]}
               >
                 <DatePicker
-                  format="YYYY-MM-DD"
+                  format="YYYY-MM-DD HH:mm"
+                  showTime={{ format: "HH:mm" }}
                   style={{ width: "100%" }}
                   value={selectedDate}
                   onChange={(date) => setSelectedDate(date)}
@@ -289,11 +288,14 @@ const HomePage = ({ isLoggedIn, user }) => {
               </Form.Item>
               <Form.Item
                 name="date"
-                label="Ngày"
-                rules={[{ required: true, message: "Vui lòng chọn ngày!" }]}
+                label="Ngày và Giờ"
+                rules={[
+                  { required: true, message: "Vui lòng chọn ngày và giờ!" },
+                ]}
               >
                 <DatePicker
-                  format="YYYY-MM-DD"
+                  format="YYYY-MM-DD HH:mm"
+                  showTime={{ format: "HH:mm" }}
                   style={{ width: "100%" }}
                   value={selectedDate}
                   onChange={(date) => setSelectedDate(date)}
@@ -339,10 +341,19 @@ const HomePage = ({ isLoggedIn, user }) => {
               onSelectEvent={handleSelectEvent}
               onEventDrop={handleEventDrop}
               draggableAccessor={() => true}
-              components={{ event: EventComponent }}
+              components={{
+                event: (props) => (
+                  <EventComponent
+                    {...props}
+                    handleDeleteTask={handleDeleteTask}
+                  />
+                ),
+              }}
               style={{ height: "100%" }}
               date={selectedDate.toDate()}
               onNavigate={(newDate) => setSelectedDate(moment(newDate))}
+              defaultView="month" // Mặc định hiển thị tuần để thấy giờ
+              views={["month", "week", "day"]} // Cho phép chuyển đổi chế độ xem
             />
           </div>
         </div>
