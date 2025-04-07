@@ -66,14 +66,14 @@ const Header = () => {
                 className="auth-button login-button"
                 disabled={loading}
               >
-                Login
+                Log In
               </button>
               <button
-                onClick={handleSignup}
+                // onClick={handleSignup}
                 className="auth-button signup-button"
-                disabled={loading}
+                // disabled={loading}
               >
-                {loading ? "Signing up..." : "Sign up"}
+                Sign Up 
               </button>
             </div>
           )}

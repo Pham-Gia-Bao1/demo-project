@@ -58,7 +58,7 @@ const HomePage = ({ isLoggedIn, user }) => {
     id: task.id,
     title: task.title,
     start: moment(task.date).toDate(),
-    end: moment(task.date).toDate(), // Có thể thêm duration nếu cần
+    end: moment(task.date).toDate(),
     resource: { status: task.status, priority: task.priority },
   }));
 
@@ -91,13 +91,10 @@ const HomePage = ({ isLoggedIn, user }) => {
     setShowAddModal(true);
   };
 
-  // Component hiển thị sự kiện trên lịch
   const EventComponent = ({ event, handleDeleteTask }) => (
-    <div className="event-container">
+    <div>
       <div>
-        <span className="event-title">
-          {event.title} ({moment(event.start).format("HH:mm")})
-        </span>
+        <span className="event-title">{event.title}</span>
         <DeleteOutlined
           onClick={(e) => {
             e.stopPropagation();
@@ -106,9 +103,11 @@ const HomePage = ({ isLoggedIn, user }) => {
           className="event-delete-icon"
         />
       </div>
+      <span className="event-status">
+        {event.resource?.status || "Không có trạng thái"}
+      </span>
     </div>
   );
-
   return (
     <main className="homepage">
       <h2
@@ -146,6 +145,7 @@ const HomePage = ({ isLoggedIn, user }) => {
               >
                 Thêm công việc mới
               </Button>
+
               <div className="search-bar" style={{ marginLeft: 16 }}>
                 <span className="search-icon">🔍</span>
                 <input
@@ -340,7 +340,6 @@ const HomePage = ({ isLoggedIn, user }) => {
               endAccessor="end"
               onSelectEvent={handleSelectEvent}
               onEventDrop={handleEventDrop}
-              draggableAccessor={() => true}
               components={{
                 event: (props) => (
                   <EventComponent
@@ -349,11 +348,34 @@ const HomePage = ({ isLoggedIn, user }) => {
                   />
                 ),
               }}
-              style={{ height: "100%" }}
-              date={selectedDate.toDate()}
-              onNavigate={(newDate) => setSelectedDate(moment(newDate))}
-              defaultView="month" // Mặc định hiển thị tuần để thấy giờ
-              views={["month", "week", "day"]} // Cho phép chuyển đổi chế độ xem
+              style={{ height: 600 }}
+              defaultView="month" // Thử chế độ "month", "week", hoặc "day"
+              views={["month", "week", "day", "agenda"]} // Đảm bảo có các chế độ này
+              eventPropGetter={(event) => {
+                let backgroundColor = "#95a5a6"; // Mặc định
+                switch (event.resource.status) {
+                  case "Chưa bắt đầu":
+                    backgroundColor = "#f39c12"; // Vàng cam
+                    break;
+                  case "Đang thực hiện":
+                    backgroundColor = "#3498db"; // Xanh dương
+                    break;
+                  case "Hoàn thành":
+                    backgroundColor = "#2ecc71"; // Xanh lá
+                    break;
+                  default:
+                    backgroundColor = "#95a5a6"; // Xám
+                }
+                return {
+                  style: {
+                    backgroundColor,
+                    color: "#fff",
+                    borderRadius: "5px",
+                    padding: "4px 8px",
+                    border: "none",
+                  },
+                };
+              }}
             />
           </div>
         </div>

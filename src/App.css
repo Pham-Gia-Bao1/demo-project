@@ -566,3 +566,32 @@
   object-fit: cover; /* Ensures the image covers the container without stretching */
   object-position: center; /* Centers the image */
 }
+
+.label-container {
+  display: flex;
+  margin-bottom: 25px;
+  gap: 8px;
+}
+
+.label {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  color: white;
+}
+
+.label-important {
+  background-color: #f39c12; /* Red */
+}
+
+.label-completed {
+  background-color: #2ecc71; /* Green */
+}
+
+.label-inprogress {
+  background-color: #3498db; /* Blue */
+}
+.event-status{
+  font-size: 10px;
+}
