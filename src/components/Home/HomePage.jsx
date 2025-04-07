@@ -94,7 +94,9 @@ const HomePage = ({ isLoggedIn, user }) => {
   const EventComponent = ({ event, handleDeleteTask }) => (
     <div>
       <div>
-        <span className="event-title">{event.title}</span>
+        <span className="event-title">
+          {event.title}
+        </span>
         <DeleteOutlined
           onClick={(e) => {
             e.stopPropagation();
@@ -103,9 +105,7 @@ const HomePage = ({ isLoggedIn, user }) => {
           className="event-delete-icon"
         />
       </div>
-      <span className="event-status">
-        {event.resource?.status || "Không có trạng thái"}
-      </span>
+      <span className="event-status">{event.resource?.status || "Không có trạng thái"}</span>
     </div>
   );
   return (
@@ -145,6 +145,7 @@ const HomePage = ({ isLoggedIn, user }) => {
               >
                 Thêm công việc mới
               </Button>
+
 
               <div className="search-bar" style={{ marginLeft: 16 }}>
                 <span className="search-icon">🔍</span>
@@ -349,10 +350,9 @@ const HomePage = ({ isLoggedIn, user }) => {
                 ),
               }}
               style={{ height: 600 }}
-              defaultView="month" // Thử chế độ "month", "week", hoặc "day"
-              views={["month", "week", "day", "agenda"]} // Đảm bảo có các chế độ này
               eventPropGetter={(event) => {
                 let backgroundColor = "#95a5a6"; // Mặc định
+
                 switch (event.resource.status) {
                   case "Chưa bắt đầu":
                     backgroundColor = "#f39c12"; // Vàng cam
@@ -366,6 +366,7 @@ const HomePage = ({ isLoggedIn, user }) => {
                   default:
                     backgroundColor = "#95a5a6"; // Xám
                 }
+
                 return {
                   style: {
                     backgroundColor,

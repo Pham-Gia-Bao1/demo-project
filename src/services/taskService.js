@@ -69,9 +69,9 @@ export const taskService = {
     { id: 65, title: "Cập nhật thông báo push", status: "Hoàn thành", priority: "Thấp", date: "2025-05-20" },
     { id: 66, title: "Khảo sát người dùng", status: "Chưa bắt đầu", priority: "Trung bình", date: "2025-05-21" },
     { id: 67, title: "Viết unit test", status: "Đang thực hiện", priority: "Cao", date: "2025-05-22" },
-    { id: 68, title: "Nghiên cứu thị trường", status: "Hoàn thành", priority: "Trung bình", date: "2025-05-23" },
-    { id: 69, title: "Tích hợp OAuth2", status: "Chưa bắt đầu", priority: "Cao", date: "2025-05-24" },
-    { id: 70, title: "Tạo form liên hệ", status: "Đang thực hiện", priority: "Thấp", date: "2025-05-25" }
+    { id: 68, title: "Nghiên cứu thị trường", status: "Hoàn thành", priority: "Trung bình", date: "2025-04-07" },
+    { id: 69, title: "Tích hợp OAuth2", status: "Chưa bắt đầu", priority: "Cao", date: "2025-04-07" },
+    { id: 70, title: "Tạo form liên hệ", status: "Đang thực hiện", priority: "Thấp", date: "2025-04-07" }
   ];
 },
   // Thêm task mới
