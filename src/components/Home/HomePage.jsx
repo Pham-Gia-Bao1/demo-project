@@ -104,9 +104,9 @@ const HomePage = ({ isLoggedIn, user }) => {
             className="event-delete-icon"
           />
         </div>
-        <span className="event-status">
+        {/* <span className="event-status">
           {event.resource?.status || "Không có trạng thái"}
-        </span>
+        </span> */}
       </div>
     </React.Fragment>
   );
