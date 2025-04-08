@@ -61,7 +61,7 @@ const HomePage = ({ isLoggedIn, user }) => {
     end: moment(task.date).toDate(),
     resource: { status: task.status, priority: task.priority },
   }));
-
+ 
   // Xử lý kéo thả sự kiện trên lịch
   const handleEventDrop = ({ event, start }) => {
     const updatedTask = {
@@ -92,21 +92,23 @@ const HomePage = ({ isLoggedIn, user }) => {
   };
 
   const EventComponent = ({ event, handleDeleteTask }) => (
-    <div>
+    <React.Fragment key={event.id}>
       <div>
-        <span className="event-title">
-          {event.title}
+        <div>
+          <span className="event-title">{event.title}</span>
+          <DeleteOutlined
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDeleteTask(event.id);
+            }}
+            className="event-delete-icon"
+          />
+        </div>
+        <span className="event-status">
+          {event.resource?.status || "Không có trạng thái"}
         </span>
-        <DeleteOutlined
-          onClick={(e) => {
-            e.stopPropagation();
-            handleDeleteTask(event.id);
-          }}
-          className="event-delete-icon"
-        />
       </div>
-      <span className="event-status">{event.resource?.status || "Không có trạng thái"}</span>
-    </div>
+    </React.Fragment>
   );
   return (
     <main className="homepage">
@@ -361,10 +363,10 @@ const HomePage = ({ isLoggedIn, user }) => {
                     backgroundColor = "#3498db"; // Xanh dương
                     break;
                   case "Hoàn thành":
-                    backgroundColor = "#2ecc71"; // Xanh lá
+                    backgroundColor = "#2ecc71"; // Xanh lá     
                     break;
                   default:
-                    backgroundColor = "#95a5a6"; // Xám
+                    backgroundColor = "#95a5a6"; // Xám         
                 }
 
                 return {
