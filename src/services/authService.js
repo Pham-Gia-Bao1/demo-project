@@ -31,12 +31,6 @@ api.interceptors.response.use(
   (error) => Promise.reject(error)
 );
 
-const handleError = (error, action) => {
-  const message =
-    error.response?.data?.message || `${action} failed. Please try again.`;
-  throw new Error(message);
-};
-
 const storeTokens = (accessToken, refreshToken) => {
   Cookies.set("authToken", accessToken, { ...COOKIE_CONFIG, expires: 1 });
   Cookies.set("refreshToken", refreshToken, { ...COOKIE_CONFIG, expires: 7 });

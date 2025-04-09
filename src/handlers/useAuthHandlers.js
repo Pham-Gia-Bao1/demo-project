@@ -15,7 +15,7 @@ const useAuthHandlers = () => {
     const initializeAuth = async () => {
       setLoading(true);
       try {
-        const user = await checkUserSession(dispatch); // Gọi hàm kiểm tra session
+        const user = await checkUserSession(dispatch);
         if (user) {
           console.log('Session restored:', user);
         } else {

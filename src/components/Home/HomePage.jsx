@@ -1,25 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Button, Modal, Form, Input, Select, Space, DatePicker } from "antd";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
-import "moment/locale/vi"; // Thêm locale tiếng Việt
+import "moment/locale/vi"; // Add Vietnamese locale
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import useTaskHandlers from "../../handlers/useTaskHandlers";
 import { DeleteOutlined } from "@ant-design/icons";
 import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
-
+import {
+  resetTasks, filterTaskByStatus,
+  filterTaskByPriority,
+  filterTaskByDate
+} from "../../store/taskSlice";
+import { useDispatch } from "react-redux";
 const DnDCalendar = withDragAndDrop(Calendar);
 
 const { Option } = Select;
 
-// Đặt locale tiếng Việt cho moment
+// Set Vietnamese locale for moment
 moment.locale("vi");
 const localizer = momentLocalizer(moment);
 
 const HomePage = ({ isLoggedIn, user }) => {
-  const tasks = useSelector((state) => state.tasks.tasks);
+  const dispatch = useDispatch();
+  const tasks = useSelector((state) => state.tasks.tasks || []); // Added fallback
   const [newTask, setNewTask] = useState({
     title: "",
     status: "",
@@ -33,6 +39,11 @@ const HomePage = ({ isLoggedIn, user }) => {
   const [form] = Form.useForm();
   const [selectedDate, setSelectedDate] = useState(moment());
   const [searchTerm, setSearchTerm] = useState("");
+  const [filters, setFilters] = useState({
+    status: null,
+    priority: null,
+    date: null,
+  });
 
   const {
     handleAddTask,
@@ -53,7 +64,19 @@ const HomePage = ({ isLoggedIn, user }) => {
     editTask
   );
 
-  // Chuyển đổi tasks thành sự kiện lịch với giờ
+  useEffect(() => {
+    dispatch(resetTasks());
+    if (filters.status) {
+      dispatch(filterTaskByStatus(filters.status));
+    }
+    if (filters.priority) {
+      dispatch(filterTaskByPriority(filters.priority));
+    }
+    if (filters.date) {
+      dispatch(filterTaskByDate(filters.date.format("YYYY-MM-DD")));
+    }
+  }, [filters, dispatch]);
+
   const calendarEvents = tasks.map((task) => ({
     id: task.id,
     title: task.title,
@@ -61,17 +84,15 @@ const HomePage = ({ isLoggedIn, user }) => {
     end: moment(task.date).toDate(),
     resource: { status: task.status, priority: task.priority },
   }));
- 
-  // Xử lý kéo thả sự kiện trên lịch
+
   const handleEventDrop = ({ event, start }) => {
     const updatedTask = {
       ...tasks.find((t) => t.id === event.id),
       date: moment(start).format("YYYY-MM-DD HH:mm"),
     };
-    handleUpdateTask({ preventDefault: () => {} }, updatedTask);
+    handleUpdateTask({ preventDefault: () => { } }, updatedTask);
   };
 
-  // Xử lý khi chọn một sự kiện trên lịch
   const handleSelectEvent = (event) => {
     form.resetFields();
     const task = tasks.find((t) => t.id === event.id);
@@ -79,11 +100,10 @@ const HomePage = ({ isLoggedIn, user }) => {
       const taskWithMomentDate = { ...task, date: moment(task.date) };
       handleEditTask(taskWithMomentDate);
       form.setFieldsValue(taskWithMomentDate);
-      setSelectedDate(moment(task.date)); // Đồng bộ selectedDate
+      setSelectedDate(moment(task.date));
     }
   };
 
-  // Mở modal thêm task
   const openAddModal = () => {
     form.resetFields();
     setNewTask({ title: "", status: "", priority: "", date: null });
@@ -91,25 +111,24 @@ const HomePage = ({ isLoggedIn, user }) => {
     setShowAddModal(true);
   };
 
-  const EventComponent = ({ event, handleDeleteTask }) => (
-    <React.Fragment key={event.id}>
-      <div>
-        <div>
-          <span className="event-title">{event.title}</span>
-          <DeleteOutlined
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDeleteTask(event.id);
-            }}
-            className="event-delete-icon"
-          />
-        </div>
-        {/* <span className="event-status">
-          {event.resource?.status || "Không có trạng thái"}
-        </span> */}
+  const EventComponent = ({ event }) => (
+    <div key={event.id}>
+      <div className="event-header">
+        <span className="event-title">{event.title}</span>
+        <DeleteOutlined
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDeleteTask(event.id);
+          }}
+          className="event-delete-icon"
+        />
       </div>
-    </React.Fragment>
+      <span className="event-status">
+        {event.resource?.status || "No status"}
+      </span>
+    </div>
   );
+
   return (
     <main className="homepage">
       <h2
@@ -121,7 +140,7 @@ const HomePage = ({ isLoggedIn, user }) => {
           textShadow: "1px 1px 2px rgba(0,0,0,0.1)",
         }}
       >
-        Chào mừng {isLoggedIn && user ? user.name : "Khách"}!
+        Welcome {isLoggedIn && user ? user.name : "Guest"}!
       </h2>
       <p
         style={{
@@ -132,8 +151,8 @@ const HomePage = ({ isLoggedIn, user }) => {
         }}
       >
         {isLoggedIn
-          ? "Quản lý công việc của bạn dưới đây:"
-          : "Vui lòng đăng nhập để quản lý công việc."}
+          ? "Manage your tasks below:"
+          : "Please log in to manage your tasks."}
       </p>
 
       {isLoggedIn && (
@@ -145,15 +164,14 @@ const HomePage = ({ isLoggedIn, user }) => {
                 onClick={openAddModal}
                 style={{ marginBottom: 24 }}
               >
-                Thêm công việc mới
+                Add New Task
               </Button>
-
 
               <div className="search-bar" style={{ marginLeft: 16 }}>
                 <span className="search-icon">🔍</span>
                 <input
                   type="text"
-                  placeholder="Tìm kiếm công việc"
+                  placeholder="Search tasks"
                   value={searchTerm}
                   onChange={(e) => {
                     setSearchTerm(e.target.value);
@@ -164,11 +182,11 @@ const HomePage = ({ isLoggedIn, user }) => {
             </div>
           </div>
 
-          {/* Modal Thêm Task */}
+          {/* Add Task Modal */}
           <Modal
             title={
               <span style={{ color: "#2c3e50", fontWeight: "600" }}>
-                Thêm công việc mới
+                Add New Task
               </span>
             }
             open={showAddModal}
@@ -178,44 +196,42 @@ const HomePage = ({ isLoggedIn, user }) => {
             <Form form={form} onFinish={handleAddSubmit} layout="vertical">
               <Form.Item
                 name="title"
-                label="Tên công việc"
+                label="Task Name"
                 rules={[
-                  { required: true, message: "Vui lòng nhập tên công việc!" },
+                  { required: true, message: "Please enter the task name!" },
                 ]}
               >
-                <Input placeholder="Tên công việc" />
+                <Input placeholder="Task Name" />
               </Form.Item>
               <Form.Item
                 name="status"
-                label="Trạng thái"
-                rules={[
-                  { required: true, message: "Vui lòng chọn trạng thái!" },
-                ]}
+                label="Status"
+                rules={[{ required: true, message: "Please select a status!" }]}
               >
-                <Select placeholder="Chọn trạng thái">
-                  <Option value="Chưa bắt đầu">Chưa bắt đầu</Option>
-                  <Option value="Đang thực hiện">Đang thực hiện</Option>
-                  <Option value="Hoàn thành">Hoàn thành</Option>
+                <Select placeholder="Select status">
+                  <Option value="Not Started">Not Started</Option>
+                  <Option value="In Progress">In Progress</Option>
+                  <Option value="Completed">Completed</Option>
                 </Select>
               </Form.Item>
               <Form.Item
                 name="priority"
-                label="Độ ưu tiên"
+                label="Priority"
                 rules={[
-                  { required: true, message: "Vui lòng chọn độ ưu tiên!" },
+                  { required: true, message: "Please select a priority!" },
                 ]}
               >
-                <Select placeholder="Chọn độ ưu tiên">
-                  <Option value="Cao">Cao</Option>
-                  <Option value="Trung bình">Trung bình</Option>
-                  <Option value="Thấp">Thấp</Option>
+                <Select placeholder="Select priority">
+                  <Option value="High">High</Option>
+                  <Option value="Medium">Medium</Option>
+                  <Option value="Low">Low</Option>
                 </Select>
               </Form.Item>
               <Form.Item
                 name="date"
-                label="Ngày và Giờ"
+                label="Date and Time"
                 rules={[
-                  { required: true, message: "Vui lòng chọn ngày và giờ!" },
+                  { required: true, message: "Please select a date and time!" },
                 ]}
               >
                 <DatePicker
@@ -229,19 +245,19 @@ const HomePage = ({ isLoggedIn, user }) => {
               <Form.Item>
                 <Space>
                   <Button type="primary" htmlType="submit">
-                    Lưu
+                    Save
                   </Button>
-                  <Button onClick={() => setShowAddModal(false)}>Hủy</Button>
+                  <Button onClick={() => setShowAddModal(false)}>Cancel</Button>
                 </Space>
               </Form.Item>
             </Form>
           </Modal>
 
-          {/* Modal Chỉnh sửa Task */}
+          {/* Edit Task Modal */}
           <Modal
             title={
               <span style={{ color: "#2c3e50", fontWeight: "600" }}>
-                Chỉnh sửa công việc
+                Edit Task
               </span>
             }
             open={showEditModal}
@@ -256,44 +272,42 @@ const HomePage = ({ isLoggedIn, user }) => {
             >
               <Form.Item
                 name="title"
-                label="Tên công việc"
+                label="Task Name"
                 rules={[
-                  { required: true, message: "Vui lòng nhập tên công việc!" },
+                  { required: true, message: "Please enter the task name!" },
                 ]}
               >
                 <Input />
               </Form.Item>
               <Form.Item
                 name="status"
-                label="Trạng thái"
-                rules={[
-                  { required: true, message: "Vui lòng chọn trạng thái!" },
-                ]}
+                label="Status"
+                rules={[{ required: true, message: "Please select a status!" }]}
               >
                 <Select>
-                  <Option value="Chưa bắt đầu">Chưa bắt đầu</Option>
-                  <Option value="Đang thực hiện">Đang thực hiện</Option>
-                  <Option value="Hoàn thành">Hoàn thành</Option>
+                  <Option value="Not Started">Not Started</Option>
+                  <Option value="In Progress">In Progress</Option>
+                  <Option value="Completed">Completed</Option>
                 </Select>
               </Form.Item>
               <Form.Item
                 name="priority"
-                label="Độ ưu tiên"
+                label="Priority"
                 rules={[
-                  { required: true, message: "Vui lòng chọn độ ưu tiên!" },
+                  { required: true, message: "Please select a priority!" },
                 ]}
               >
                 <Select>
-                  <Option value="Cao">Cao</Option>
-                  <Option value="Trung bình">Trung bình</Option>
-                  <Option value="Thấp">Thấp</Option>
+                  <Option value="High">High</Option>
+                  <Option value="Medium">Medium</Option>
+                  <Option value="Low">Low</Option>
                 </Select>
               </Form.Item>
               <Form.Item
                 name="date"
-                label="Ngày và Giờ"
+                label="Date and Time"
                 rules={[
-                  { required: true, message: "Vui lòng chọn ngày và giờ!" },
+                  { required: true, message: "Please select a date and time!" },
                 ]}
               >
                 <DatePicker
@@ -307,35 +321,35 @@ const HomePage = ({ isLoggedIn, user }) => {
               <Form.Item>
                 <Space>
                   <Button type="primary" htmlType="submit">
-                    Lưu
+                    Save
                   </Button>
-                  <Button onClick={() => setShowEditModal(false)}>Hủy</Button>
+                  <Button onClick={() => setShowEditModal(false)}>Cancel</Button>
                 </Space>
               </Form.Item>
             </Form>
           </Modal>
 
-          {/* Modal Xác nhận Xóa */}
+          {/* Delete Confirmation Modal */}
           <Modal
             title={
               <span style={{ color: "#e74c3c", fontWeight: "600" }}>
-                Xác nhận xóa
+                Confirm Deletion
               </span>
             }
             open={!!showDeleteModal}
             onOk={() => confirmDelete(showDeleteModal)}
             onCancel={() => setShowDeleteModal(null)}
-            okText="Xóa"
-            cancelText="Hủy"
+            okText="Delete"
+            cancelText="Cancel"
             okButtonProps={{ danger: true }}
           >
             <p style={{ color: "#7f8c8d" }}>
-              Bạn có chắc muốn xóa công việc này không?
+              Are you sure you want to delete this task?
             </p>
           </Modal>
 
-          {/* Lịch Công việc */}
-          <div style={{ height: "600px" }}>
+          {/* Task Calendar */}
+          <div className="task-calendar">
             <DnDCalendar
               localizer={localizer}
               events={calendarEvents}
@@ -351,22 +365,22 @@ const HomePage = ({ isLoggedIn, user }) => {
                   />
                 ),
               }}
-              style={{ height: 600 }}
+              style={{ height: 600, width: "100%" }}
               eventPropGetter={(event) => {
-                let backgroundColor = "#95a5a6"; // Mặc định
+                let backgroundColor = "#95a5a6"; // Default
 
                 switch (event.resource.status) {
-                  case "Chưa bắt đầu":
-                    backgroundColor = "#f39c12"; // Vàng cam
+                  case "Not Started":
+                    backgroundColor = "#f39c12"; // Orange
                     break;
-                  case "Đang thực hiện":
-                    backgroundColor = "#3498db"; // Xanh dương
+                  case "In Progress":
+                    backgroundColor = "#3498db"; // Blue
                     break;
-                  case "Hoàn thành":
-                    backgroundColor = "#2ecc71"; // Xanh lá     
+                  case "Completed":
+                    backgroundColor = "#2ecc71"; // Green
                     break;
                   default:
-                    backgroundColor = "#95a5a6"; // Xám         
+                    backgroundColor = "#95a5a6"; // Gray
                 }
 
                 return {
@@ -380,6 +394,59 @@ const HomePage = ({ isLoggedIn, user }) => {
                 };
               }}
             />
+            <div
+              style={{
+                width: "250px",
+                border: "1px solid #e0e0e0",
+                padding: "16px",
+              }}
+            >
+              <h3 style={{ marginBottom: "16px", color: "#34495e" }}>Filter Tasks</h3>
+              <Form layout="vertical">
+                <Form.Item label="Status">
+                  <Select
+                    allowClear
+                    value={filters.status}
+                    onChange={(value) => setFilters((prev) => ({ ...prev, status: value }))}
+                  >
+                    <Option value="Not Started">Not Started</Option>
+                    <Option value="In Progress">In Progress</Option>
+                    <Option value="Completed">Completed</Option>
+                  </Select>
+                </Form.Item>
+
+                <Form.Item label="Priority">
+                  <Select
+                    allowClear
+                    value={filters.priority}
+                    onChange={(value) => setFilters((prev) => ({ ...prev, priority: value }))}
+                  >
+                    <Option value="High">High</Option>
+                    <Option value="Medium">Medium</Option>
+                    <Option value="Low">Low</Option>
+                  </Select>
+                </Form.Item>
+
+                <Form.Item label="Date">
+                  <DatePicker
+                    allowClear
+                    value={filters.date}
+                    onChange={(value) => setFilters((prev) => ({ ...prev, date: value }))}
+                    style={{ width: "100%" }}
+                  />
+                </Form.Item>
+
+                <Button
+                  onClick={() =>
+                    setFilters({ status: null, priority: null, date: null })
+                  }
+                  style={{ marginTop: "8px" }}
+                  block
+                >
+                  Clear Filters
+                </Button>
+              </Form>
+            </div>
           </div>
         </div>
       )}

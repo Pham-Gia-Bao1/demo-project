@@ -4,6 +4,7 @@ import {
   deleteTask,
   updateTask,
   searchTask,
+
 } from "../store/taskSlice";
 import { message } from "antd";
 
@@ -103,6 +104,16 @@ const useTaskHandlers = (
     }
   };
 
+  const filterTasks = (filter) => {
+    const filteredTasks = tasks.filter((task) => {
+      if (filter.status && task.status !== filter.status) return false;
+      if (filter.priority && task.priority !== filter.priority) return false;
+      if (filter.date && task.date !== filter.date) return false;
+      return true;
+    });
+    dispatch(setTasks(filteredTasks));
+  }
+
   return {
     handleAddTask,
     handleEditTask,
@@ -112,6 +123,7 @@ const useTaskHandlers = (
     handleSearchTask,
     handleAddSubmit,
     handleEditSubmit,
+    filterTasks
   };
 };
 
