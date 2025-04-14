@@ -5,7 +5,6 @@ import useAuthHandlers from "../../handlers/useAuthHandlers";
 
 const Header = () => {
   const { isLoggedIn, user } = useSelector((state) => state.auth);
-  console.log(user, "akjdhakjdhakjsdahkjhds2849238472398472983");
   const {
     showLoginForm,
     credentials,
@@ -49,7 +48,7 @@ const Header = () => {
                     className="profile-image"
                   />
                 )}
-                <span>{user?.username}</span>
+                <span>{user?.name}</span>
               </div>
               <button
                 onClick={handleLogout}

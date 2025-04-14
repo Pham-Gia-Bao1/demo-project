@@ -15,6 +15,7 @@ import {
   filterTaskByDate
 } from "../../store/taskSlice";
 import { useDispatch } from "react-redux";
+import { fetchTasks } from "../../store/taskSlice";
 const DnDCalendar = withDragAndDrop(Calendar);
 
 const { Option } = Select;
@@ -25,7 +26,11 @@ const localizer = momentLocalizer(moment);
 
 const HomePage = ({ isLoggedIn, user }) => {
   const dispatch = useDispatch();
-  const tasks = useSelector((state) => state.tasks.tasks || []); // Added fallback
+  const { tasks } = useSelector((state) => state.tasks);
+  useEffect(() => {
+    dispatch(fetchTasks());
+  }, [dispatch]);
+  console.log("Tasks:", tasks);
   const [newTask, setNewTask] = useState({
     title: "",
     status: "",
