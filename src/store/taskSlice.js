@@ -7,6 +7,46 @@ export const fetchTasks = createAsyncThunk("tasks/fetchTasks", async () => {
   return tasks;
 });
 
+// ✅ Tạo thunk để thêm task bất đồng bộ
+export const addTaskAsync = createAsyncThunk(
+  "tasks/addTask",
+  async ({ tasks, newTask }, { rejectWithValue }) => {
+    try {
+      console.log("Adding task11111:", newTask);
+      const updatedTasks = await taskService.addTask(tasks, newTask);
+      return updatedTasks;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+// ✅ Tạo thunk để cập nhật task bất đồng bộ
+export const updateTaskAsync = createAsyncThunk(
+  "tasks/updateTask",
+  async ({ tasks, updatedTask, setTasks }, { rejectWithValue }) => {
+    try {
+      const updatedTasks = await taskService.updateTask(tasks, updatedTask, setTasks);
+      return updatedTasks;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+// ✅ Tạo thunk để xóa task bất đồng bộ
+export const deleteTaskAsync = createAsyncThunk(
+  "tasks/deleteTask",
+  async ({ tasks, id }, { rejectWithValue }) => {
+    try {
+      const updatedTasks = taskService.deleteTask(tasks, id);
+      return updatedTasks;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 const initialState = {
   tasks: [],
   loading: false,
@@ -17,15 +57,6 @@ const taskSlice = createSlice({
   name: "tasks",
   initialState,
   reducers: {
-    addTask: (state, action) => {
-      state.tasks = taskService.addTask(action.payload) || state.tasks;
-    },
-    updateTask: (state, action) => {
-      state.tasks = taskService.updateTask(state.tasks, action.payload) || state.tasks;
-    },
-    deleteTask: (state, action) => {
-      state.tasks = taskService.deleteTask(state.tasks, action.payload) || state.tasks;
-    },
     searchTask: (state, action) => {
       state.tasks = taskService.searchTask(state.tasks, action.payload) || state.tasks;
     },
@@ -64,6 +95,15 @@ const taskSlice = createSlice({
       .addCase(fetchTasks.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
+      })
+      .addCase(addTaskAsync.fulfilled, (state, action) => {
+        state.tasks = action.payload;
+      })
+      .addCase(updateTaskAsync.fulfilled, (state, action) => {
+        state.tasks = action.payload;
+      })
+      .addCase(deleteTaskAsync.fulfilled, (state, action) => {
+        state.tasks = action.payload;
       });
   },
 });

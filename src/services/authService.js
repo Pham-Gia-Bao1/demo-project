@@ -75,8 +75,7 @@ export const logoutUser = async (dispatch) => {
 export const checkUserSession = async (dispatch) => {
   const token = Cookies.get("authToken");
   if (!token) {
-    dispatch(setUser(null));
-    return;
+    return null;
   }
 
   const user = await authService.getCurrentUser();

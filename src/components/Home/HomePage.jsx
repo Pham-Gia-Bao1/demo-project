@@ -82,13 +82,13 @@ const HomePage = ({ isLoggedIn, user }) => {
     }
   }, [filters, dispatch]);
 
-  const calendarEvents = tasks.map((task) => ({
+  const calendarEvents = Array.isArray(tasks) ? tasks.map((task) => ({
     id: task.id,
     title: task.title,
     start: moment(task.date).toDate(),
     end: moment(task.date).toDate(),
     resource: { status: task.status, priority: task.priority },
-  }));
+  })) : [];
 
   const handleEventDrop = ({ event, start }) => {
     const updatedTask = {

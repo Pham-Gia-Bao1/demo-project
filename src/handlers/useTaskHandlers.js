@@ -4,7 +4,10 @@ import {
   deleteTask,
   updateTask,
   searchTask,
-
+  addTaskAsync,
+  updateTaskAsync,
+  deleteTaskAsync,
+  fetchTasks
 } from "../store/taskSlice";
 import { message } from "antd";
 
@@ -29,8 +32,13 @@ const useTaskHandlers = (
 
   const handleAddTask = (e, taskData) => {
     e.preventDefault();
+    console.log("Adding task:", taskData);
+    if (!taskData.title || !taskData.date) {
+      showError("Vui lòng nhập đầy đủ thông tin công việc!");
+      return;
+    }
     try {
-      dispatch(addTask(taskData));
+      dispatch(addTaskAsync({ tasks, newTask: taskData }));
       showSuccess("Thêm công việc thành công!");
       resetAddForm();
       setShowAddModal(false);
@@ -44,12 +52,13 @@ const useTaskHandlers = (
     setShowEditModal(true);
   };
 
-  const handleUpdateTask = (e, taskData) => {
+  const handleUpdateTask = async (e, taskData) => {
     e.preventDefault();
     try {
-      dispatch(updateTask(taskData));
+      await dispatch(updateTaskAsync({ tasks, updatedTask: taskData }));
       showSuccess("Cập nhật công việc thành công!");
       setShowEditModal(false);
+      dispatch(fetchTasks()); // Refresh tasks after successful update
     } catch (error) {
       showError("Cập nhật công việc thất bại!");
     }
@@ -59,9 +68,10 @@ const useTaskHandlers = (
     setShowDeleteModal(id);
   };
 
-  const confirmDelete = (id) => {
+  const confirmDelete = async (id) => {
     try {
-      dispatch(deleteTask(id));
+      await dispatch(deleteTaskAsync({ tasks, id }));
+      dispatch(fetchTasks()); // Refresh tasks after successful update
       showSuccess("Xóa công việc thành công!");
     } catch (error) {
       showError("Xóa công việc thất bại!");

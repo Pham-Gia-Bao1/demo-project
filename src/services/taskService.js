@@ -30,22 +30,71 @@ export const taskService = {
     return null;
   },
   // Thêm task mới
-  addTask: (tasks, newTask) => {
-    if (!newTask.title || !newTask.date) return tasks;
-    return [...tasks, { id: tasks.length + 1, ...newTask }];
+  addTask: async (tasks, newTask) => {
+    console.log("Tasks before adding:", tasks);
+    console.log("Adding task21312312:", newTask);
+
+    // Validate required fields
+    if (!newTask || !newTask.title || !newTask.date || !newTask.status || !newTask.priority) {
+      console.error("Invalid task data provided. All fields are required:", newTask);
+      return tasks;
+    }
+
+    try {
+      const token = taskService.getToken();
+      console.log("Token:", token);
+      if (token) {
+        const { data } = await apiTask.post("/tasks", newTask);
+        console.log("Add task response:", data);
+        return [...tasks, { id: data.id, ...data }];
+      }
+    } catch (error) {
+      console.error("Error adding task:", error);
+      return tasks;
+    }
+
+    return tasks;
   },
 
   // Cập nhật task
-  updateTask: (tasks, updatedTask) => {
-    if (!updatedTask.title || !updatedTask.date) return tasks;
-    return tasks.map((task) =>
-      task.id === updatedTask.id ? updatedTask : task
-    );
+  updateTask: async (tasks, updatedTask) => {
+    if (!updatedTask.title || !updatedTask.date) {
+      console.error("Invalid task data. Title and date are required.", updatedTask);
+      return tasks;
+    }
+
+    try {
+      const token = taskService.getToken();
+      if (!token) {
+        console.error("No token found. Cannot update task.");
+        return tasks;
+      }
+
+      const { data } = await apiTask.put(`/tasks/${updatedTask.id}`, updatedTask);
+      return tasks.map((task) =>
+        task.id === updatedTask.id ? { ...task, ...data } : task
+      );
+    } catch (error) {
+      console.error("Error updating task:", error);
+      return tasks;
+    }
   },
 
   // Xóa task
-  deleteTask: (tasks, id) => {
-    return tasks.filter((task) => task.id !== id);
+  deleteTask: async (tasks, id) => {
+    try {
+      const token = taskService.getToken();
+      if (!token) {
+        console.error("No token found. Cannot delete task.");
+        return tasks;
+      }
+
+      await apiTask.delete(`/tasks/${id}`);
+      return tasks.filter((task) => task.id !== id);
+    } catch (error) {
+      console.error("Error deleting task:", error);
+      return tasks;
+    }
   },
   // Tìm kiếm task
   searchTask: (tasks, keyword) => {
