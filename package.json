@@ -1,7 +1,7 @@
 {
   "name": "demo",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "index.tsx",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
@@ -734,6 +734,7 @@
     "react-icons": "^5.5.0",
     "react-is": "^17.0.2",
     "react-lifecycles-compat": "^3.0.4",
+    "react-magic-motion": "^1.1.2",
     "react-overlays": "^5.2.1",
     "react-redux": "^9.2.0",
     "react-refresh": "^0.11.0",

@@ -1,51 +1,35 @@
 import { apiTask } from "../config/apiConfig";
 import Cookies from "js-cookie";
+import { Task } from "../models/Task.ts";
 
 export const taskService = {
-  getToken: () => {
-    // Lấy token từ Cookie
+  getToken: (): string | null => {
     const token = Cookies.get("authToken");
-    console.log("Token:", token);
-    if (!token) {
-      console.log("No token found");
-      return null;
-    }
-    return token;
+    return token || null;
   },
-  getTasks: async () => {
+  getTasks: async (): Promise<Task[] | null> => {
     const token = taskService.getToken();
-    console.log("Token:", token);
-
     if (token) {
       try {
-        const { data : { data }} = await apiTask.get("/tasks");
-        console.log("Tasks response:", data);
+        const { data: { data } } = await apiTask.get("/tasks");
         return data || [];
       } catch (error) {
         console.error("Error fetching tasks:", error);
         return null;
       }
     }
-
     return null;
   },
-  // Thêm task mới
-  addTask: async (tasks, newTask) => {
-    console.log("Tasks before adding:", tasks);
-    console.log("Adding task21312312:", newTask);
-
-    // Validate required fields
-    if (!newTask || !newTask.title || !newTask.date || !newTask.status || !newTask.priority) {
+  addTask: async (tasks: Task[], newTask: Omit<Task, 'id'>): Promise<Task[]> => {
+    if (!newTask.title || !newTask.date || !newTask.status || !newTask.priority) {
       console.error("Invalid task data provided. All fields are required:", newTask);
       return tasks;
     }
 
     try {
       const token = taskService.getToken();
-      console.log("Token:", token);
       if (token) {
         const { data } = await apiTask.post("/tasks", newTask);
-        console.log("Add task response:", data);
         return [...tasks, { id: data.id, ...data }];
       }
     } catch (error) {
@@ -55,9 +39,7 @@ export const taskService = {
 
     return tasks;
   },
-
-  // Cập nhật task
-  updateTask: async (tasks, updatedTask) => {
+  updateTask: async (tasks: Task[], updatedTask: Task): Promise<Task[]> => {
     if (!updatedTask.title || !updatedTask.date) {
       console.error("Invalid task data. Title and date are required.", updatedTask);
       return tasks;
@@ -79,9 +61,7 @@ export const taskService = {
       return tasks;
     }
   },
-
-  // Xóa task
-  deleteTask: async (tasks, id) => {
+  deleteTask: async (tasks: Task[], id: string): Promise<Task[]> => {
     try {
       const token = taskService.getToken();
       if (!token) {
@@ -96,30 +76,23 @@ export const taskService = {
       return tasks;
     }
   },
-  // Tìm kiếm task
-  searchTask: (tasks, keyword) => {
-    if (!keyword) return taskService.getTasks();
+  searchTask: (tasks: Task[], keyword: string): Task[] => {
+    if (!Array.isArray(tasks)) return tasks;
+    if (!keyword.trim()) return tasks;
     return tasks.filter((task) =>
       task.title.toLowerCase().includes(keyword.toLowerCase())
     );
   },
-  // Lọc task theo trạng thái
-  filterTaskByStatus: (tasks, status) => {
+  filterTaskByStatus: (tasks: Task[], status: string): Task[] => {
     if (!status) return tasks;
     return tasks.filter((task) => task.status === status);
   },
-  // Lọc task theo độ ưu tiên
-  filterTaskByPriority: (tasks, priority) => {
+  filterTaskByPriority: (tasks: Task[], priority: string): Task[] => {
     if (!priority) return tasks;
     return tasks.filter((task) => task.priority === priority);
   },
-  // Lọc task theo ngày
-  filterTaskByDate: (tasks, date) => {
+  filterTaskByDate: (tasks: Task[], date: string): Task[] => {
     if (!date) return tasks;
     return tasks.filter((task) => task.date === date);
-  },
-  // set tasks
-  setTasks: (tasks, newTasks) => {
-    return newTasks;
   },
 };

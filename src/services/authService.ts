@@ -1,14 +1,19 @@
-// src/services/authService.js
 import { apiAuth } from "../config/apiConfig";
 import { storeTokens, clearTokens } from "../config/apiConfig";
 import Cookies from "js-cookie";
-import { login, setUser } from "../store/authSlice";
+import authSlice, { login, setUser } from "../store/authSlice.ts";
+import { Dispatch } from "@reduxjs/toolkit";
+import { User } from "../store/authSlice.ts";
 
-// Auth Service
+// Types
+interface LoginResponse {
+  accessToken: string;
+  refreshToken: string;
+}
+
 const authService = {
-
-  async login(email, password) {
-    const { data : {data} } = await apiAuth.post(
+  async login(email: string, password: string): Promise<LoginResponse> {
+    const { data: { data } } = await apiAuth.post(
       "/login",
       { email, password },
     );
@@ -17,10 +22,10 @@ const authService = {
     return data;
   },
 
-  async logout(dispatch) {
+  async logout(dispatch: Dispatch): Promise<void> {
     try {
       await apiAuth.post("/logout");
-    } catch (error) {
+    } catch (error: any) {
       if (error.response?.status === 401) {
         console.warn("Token invalid or expired during logout.");
       } else {
@@ -32,7 +37,7 @@ const authService = {
     }
   },
 
-  async signup(email, password) {
+  async signup(email: string, password: string): Promise<LoginResponse> {
     const formData = new FormData();
     formData.append("email", email);
     formData.append("password", password);
@@ -41,9 +46,9 @@ const authService = {
     return data;
   },
 
-  async getCurrentUser() {
+  async getCurrentUser(): Promise<User | null> {
     try {
-      const { data : {data} } = await apiAuth.get("/me");
+      const { data: { data } } = await apiAuth.get("/me");
       return data;
     } catch {
       return null;
@@ -51,16 +56,23 @@ const authService = {
   },
 };
 
-// Exported Functions
-export const loginUser = async (email, password, dispatch) => {
+export const loginUser = async (
+  email: string,
+  password: string,
+  dispatch: Dispatch
+): Promise<User> => {
   const data = await authService.login(email, password);
   const user = await authService.getCurrentUser();
   if (!user) throw new Error("Failed to fetch user data after login");
-  dispatch(login({ token: data.access_token, user }));
+  dispatch(login({ token: data.accessToken, user }));
   return user;
 };
 
-export const signupUser = async (email, password, dispatch) => {
+export const signupUser = async (
+  email: string,
+  password: string,
+  dispatch: Dispatch
+): Promise<{ user: User }> => {
   const data = await authService.signup(email, password);
   const user = await authService.getCurrentUser();
   if (!user) throw new Error("Failed to fetch user data after signup");
@@ -68,11 +80,13 @@ export const signupUser = async (email, password, dispatch) => {
   return { user };
 };
 
-export const logoutUser = async (dispatch) => {
+export const logoutUser = async (dispatch: Dispatch): Promise<void> => {
   await authService.logout(dispatch);
 };
 
-export const checkUserSession = async (dispatch) => {
+export const checkUserSession = async (
+  dispatch: Dispatch
+): Promise<User | null> => {
   const token = Cookies.get("authToken");
   if (!token) {
     return null;
@@ -89,13 +103,12 @@ export const checkUserSession = async (dispatch) => {
   return null;
 };
 
-// Error Handling Wrapper
 const withErrorHandling =
-  (fn) =>
-  async (...args) => {
+  <T extends (...args: any[]) => Promise<any>>(fn: T) =>
+  async (...args: Parameters<T>): Promise<ReturnType<T>> => {
     try {
       return await fn(...args);
-    } catch (error) {
+    } catch (error: any) {
       throw new Error(error.message || `${fn.name} failed. Please try again.`);
     }
   };

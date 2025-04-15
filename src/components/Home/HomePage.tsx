@@ -1,54 +1,75 @@
 import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
-import { Button, Modal, Form, Input, Select, Space, DatePicker } from "antd";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  Button,
+  Modal,
+  Form,
+  Input,
+  Select,
+  Space,
+  DatePicker,
+  message,
+  Card,
+  Tag,
+} from "antd";
 import { Calendar, momentLocalizer } from "react-big-calendar";
-import moment from "moment";
-import "moment/locale/vi"; // Add Vietnamese locale
+import moment, { Moment } from "moment";
+import "moment/locale/vi";
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import useTaskHandlers from "../../handlers/useTaskHandlers";
-import { DeleteOutlined } from "@ant-design/icons";
+import useTaskHandlers from "../../handlers/useTaskHandlers.ts";
 import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
 import {
-  resetTasks, filterTaskByStatus,
+  resetTasks,
+  filterTaskByStatus,
   filterTaskByPriority,
-  filterTaskByDate
-} from "../../store/taskSlice";
-import { useDispatch } from "react-redux";
-import { fetchTasks } from "../../store/taskSlice";
+  filterTaskByDate,
+  fetchTasks,
+} from "../../store/taskSlice.ts";
+import { DeleteOutlined } from "@ant-design/icons";
+import { RootState, AppDispatch } from "../../store/store.ts";
+import { Task } from "../../models/Task.ts";
+
+
 const DnDCalendar = withDragAndDrop(Calendar);
 
 const { Option } = Select;
 
-// Set Vietnamese locale for moment
 moment.locale("vi");
 const localizer = momentLocalizer(moment);
 
-const HomePage = ({ isLoggedIn, user }) => {
-  const dispatch = useDispatch();
-  const { tasks } = useSelector((state) => state.tasks);
-  useEffect(() => {
-    dispatch(fetchTasks());
-  }, [dispatch]);
-  console.log("Tasks:", tasks);
-  const [newTask, setNewTask] = useState({
-    title: "",
-    status: "",
-    priority: "",
-    date: null,
-  });
-  const [editTask, setEditTask] = useState(null);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(null);
+type Filters = {
+  status: string | undefined;
+  priority: string | undefined;
+  date: Moment | undefined;
+};
+
+type HomePageProps = {
+  isLoggedIn: boolean;
+  user: { id: string; name: string } | null;
+};
+
+const HomePage: React.FC<HomePageProps> = ({ isLoggedIn, user }) => {
+  const dispatch: AppDispatch = useDispatch();
+  const { tasks } = useSelector((state: RootState) => state.tasks);
+  const loading = useSelector((state: RootState) => state.tasks.loading);
+
+  const [newTask, setNewTask] = useState<Task | null>(null);
+  const [editTask, setEditTask] = useState<Task | null>(null);
+  const [showAddModal, setShowAddModal] = useState<boolean>(false);
+  const [showEditModal, setShowEditModal] = useState<boolean>(false);
+  const [showDeleteModal, setShowDeleteModal] = useState<string | null>(null);
   const [form] = Form.useForm();
-  const [selectedDate, setSelectedDate] = useState(moment());
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filters, setFilters] = useState({
-    status: null,
-    priority: null,
-    date: null,
+  const [selectedDate, setSelectedDate] = useState<Moment>(moment());
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [filters, setFilters] = useState<Filters>({
+    status: undefined,
+    priority: undefined,
+    date: undefined,
   });
+
+  const showSuccess = (msg: string) => message.success(msg);
+  const showError = (msg: string) => message.error(msg);
 
   const {
     handleAddTask,
@@ -59,6 +80,7 @@ const HomePage = ({ isLoggedIn, user }) => {
     confirmDelete,
     handleAddSubmit,
     handleEditSubmit,
+    filterTasks,
   } = useTaskHandlers(
     setNewTask,
     setEditTask,
@@ -66,8 +88,18 @@ const HomePage = ({ isLoggedIn, user }) => {
     setShowEditModal,
     setShowDeleteModal,
     form,
-    editTask
+    editTask,
   );
+
+  const handleEditTaskWrapper = (task: Task | null) => {
+    if (task) {
+      handleEditTask(task);
+    }
+  };
+
+  useEffect(() => {
+    dispatch(fetchTasks());
+  }, [dispatch]);
 
   useEffect(() => {
     dispatch(resetTasks());
@@ -82,28 +114,37 @@ const HomePage = ({ isLoggedIn, user }) => {
     }
   }, [filters, dispatch]);
 
-  const calendarEvents = Array.isArray(tasks) ? tasks.map((task) => ({
-    id: task.id,
-    title: task.title,
-    start: moment(task.date).toDate(),
-    end: moment(task.date).toDate(),
-    resource: { status: task.status, priority: task.priority },
-  })) : [];
+  useEffect(() => {
+    filterTasks(filters);
+  }, [filters, dispatch]);
 
-  const handleEventDrop = ({ event, start }) => {
-    const updatedTask = {
-      ...tasks.find((t) => t.id === event.id),
-      date: moment(start).format("YYYY-MM-DD HH:mm"),
-    };
-    handleUpdateTask({ preventDefault: () => { } }, updatedTask);
+  const calendarEvents = Array.isArray(tasks)
+    ? tasks.map((task) => ({
+        id: task.id,
+        title: task.title,
+        start: moment(task.date).toDate(),
+        end: moment(task.date).toDate(),
+        resource: { status: task.status, priority: task.priority },
+      }))
+    : [];
+
+  const handleEventDrop = ({ event, start }: any) => {
+    const task = tasks.find((t) => t.id === event.id);
+    if (task) {
+      const updatedTask: Task = {
+        ...task,
+        date: moment(start).format("YYYY-MM-DD HH:mm"),
+      };
+      handleUpdateTask({ preventDefault: () => {} } as React.FormEvent, updatedTask);
+    }
   };
 
-  const handleSelectEvent = (event) => {
+  const handleSelectEvent = (event: any) => {
     form.resetFields();
     const task = tasks.find((t) => t.id === event.id);
     if (task) {
       const taskWithMomentDate = { ...task, date: moment(task.date) };
-      handleEditTask(taskWithMomentDate);
+      handleEditTaskWrapper(taskWithMomentDate);
       form.setFieldsValue(taskWithMomentDate);
       setSelectedDate(moment(task.date));
     }
@@ -111,15 +152,19 @@ const HomePage = ({ isLoggedIn, user }) => {
 
   const openAddModal = () => {
     form.resetFields();
-    setNewTask({ title: "", status: "", priority: "", date: null });
+    setNewTask({ title: "", status: "", priority: "", date: "" } as Task);
+    form.setFieldsValue({ userId: user?.id });
     setSelectedDate(moment());
     setShowAddModal(true);
   };
 
-  const EventComponent = ({ event }) => (
-    <div key={event.id}>
-      <div className="event-header">
-        <span className="event-title">{event.title}</span>
+  const EventComponent: React.FC<{ event: any }> = ({ event }) => (
+    <Card
+      size="small"
+      bordered
+      style={{ marginBottom: 8, backgroundColor: "#ffff" }}
+      title={event.title}
+      extra={
         <DeleteOutlined
           onClick={(e) => {
             e.stopPropagation();
@@ -127,37 +172,34 @@ const HomePage = ({ isLoggedIn, user }) => {
           }}
           className="event-delete-icon"
         />
-      </div>
-      <span className="event-status">
+      }
+    >
+      <Tag color={getStatusColor(event.resource?.status)}>
         {event.resource?.status || "No status"}
-      </span>
-    </div>
+      </Tag>
+    </Card>
   );
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Not Started":
+        return "#f39c12";
+      case "In Progress":
+        return "#3498db";
+      case "Completed":
+        return "#2ecc71";
+      default:
+        return "#95a5a6";
+    }
+  };
 
   return (
     <main className="homepage">
-      <h2
-        style={{
-          color: "#2c3e50",
-          textAlign: "center",
-          marginBottom: "20px",
-          fontSize: "32px",
-          textShadow: "1px 1px 2px rgba(0,0,0,0.1)",
-        }}
-      >
+      <h2 style={{ color: "#2c3e50", textAlign: "center", marginBottom: "20px", fontSize: "32px", textShadow: "1px 1px 2px rgba(0,0,0,0.1)" }}>
         Welcome {isLoggedIn && user ? user.name : "Guest"}!
       </h2>
-      <p
-        style={{
-          textAlign: "center",
-          color: "#7f8c8d",
-          fontSize: "18px",
-          marginBottom: "30px",
-        }}
-      >
-        {isLoggedIn
-          ? "Manage your tasks below:"
-          : "Please log in to manage your tasks."}
+      <p style={{ textAlign: "center", color: "#7f8c8d", fontSize: "18px", marginBottom: "30px" }}>
+        {isLoggedIn ? "Manage your tasks below:" : "Please log in to manage your tasks."}
       </p>
 
       {isLoggedIn && (
@@ -168,6 +210,7 @@ const HomePage = ({ isLoggedIn, user }) => {
                 type="primary"
                 onClick={openAddModal}
                 style={{ marginBottom: 24 }}
+                disabled={loading} // Disable button when loading
               >
                 Add New Task
               </Button>
@@ -199,6 +242,16 @@ const HomePage = ({ isLoggedIn, user }) => {
             footer={null}
           >
             <Form form={form} onFinish={handleAddSubmit} layout="vertical">
+              <Form.Item
+                hidden
+                name="userId"
+                label="User ID"
+                rules={[
+                  { required: true, message: "Please enter the user ID!" },
+                ]}
+              >
+                <Input hidden placeholder="User ID" />
+              </Form.Item>
               <Form.Item
                 name="title"
                 label="Task Name"
@@ -249,10 +302,15 @@ const HomePage = ({ isLoggedIn, user }) => {
               </Form.Item>
               <Form.Item>
                 <Space>
-                  <Button type="primary" htmlType="submit">
-                    Save
+                  <Button type="primary" htmlType="submit" disabled={loading}>
+                    {loading ? "Saving..." : "Save"}
                   </Button>
-                  <Button onClick={() => setShowAddModal(false)}>Cancel</Button>
+                  <Button
+                    onClick={() => setShowAddModal(false)}
+                    disabled={loading}
+                  >
+                    Cancel
+                  </Button>
                 </Space>
               </Form.Item>
             </Form>
@@ -273,7 +331,7 @@ const HomePage = ({ isLoggedIn, user }) => {
               form={form}
               onFinish={handleEditSubmit}
               layout="vertical"
-              initialValues={editTask}
+              initialValues={editTask || undefined} // Convert null to undefined
             >
               <Form.Item
                 name="title"
@@ -325,10 +383,12 @@ const HomePage = ({ isLoggedIn, user }) => {
               </Form.Item>
               <Form.Item>
                 <Space>
-                  <Button type="primary" htmlType="submit">
-                    Save
+                  <Button type="primary" htmlType="submit" disabled={loading}>
+                    {loading ? "Updating..." : "Save"}
                   </Button>
-                  <Button onClick={() => setShowEditModal(false)}>Cancel</Button>
+                  <Button onClick={() => setShowEditModal(false)}>
+                    Cancel
+                  </Button>
                 </Space>
               </Form.Item>
             </Form>
@@ -342,11 +402,16 @@ const HomePage = ({ isLoggedIn, user }) => {
               </span>
             }
             open={!!showDeleteModal}
-            onOk={() => confirmDelete(showDeleteModal)}
+            onOk={() => {
+              if (showDeleteModal) {
+                confirmDelete(showDeleteModal);
+              }
+            }}
             onCancel={() => setShowDeleteModal(null)}
-            okText="Delete"
+            okText={loading ? "Deleting..." : "Delete"}
             cancelText="Cancel"
-            okButtonProps={{ danger: true }}
+            okButtonProps={{ danger: true, disabled: loading }}
+            cancelButtonProps={{ disabled: loading }}
           >
             <p style={{ color: "#7f8c8d" }}>
               Are you sure you want to delete this task?
@@ -370,34 +435,7 @@ const HomePage = ({ isLoggedIn, user }) => {
                   />
                 ),
               }}
-              style={{ height: 600, width: "100%" }}
-              eventPropGetter={(event) => {
-                let backgroundColor = "#95a5a6"; // Default
-
-                switch (event.resource.status) {
-                  case "Not Started":
-                    backgroundColor = "#f39c12"; // Orange
-                    break;
-                  case "In Progress":
-                    backgroundColor = "#3498db"; // Blue
-                    break;
-                  case "Completed":
-                    backgroundColor = "#2ecc71"; // Green
-                    break;
-                  default:
-                    backgroundColor = "#95a5a6"; // Gray
-                }
-
-                return {
-                  style: {
-                    backgroundColor,
-                    color: "#fff",
-                    borderRadius: "5px",
-                    padding: "4px 8px",
-                    border: "none",
-                  },
-                };
-              }}
+              style={{ height: 600, width: "100%", backgroundColor: "#ffff" }}
             />
             <div
               style={{
@@ -406,13 +444,17 @@ const HomePage = ({ isLoggedIn, user }) => {
                 padding: "16px",
               }}
             >
-              <h3 style={{ marginBottom: "16px", color: "#34495e" }}>Filter Tasks</h3>
+              <h3 style={{ marginBottom: "16px", color: "#34495e" }}>
+                Filter Tasks
+              </h3>
               <Form layout="vertical">
                 <Form.Item label="Status">
                   <Select
                     allowClear
                     value={filters.status}
-                    onChange={(value) => setFilters((prev) => ({ ...prev, status: value }))}
+                    onChange={(value) =>
+                      setFilters((prev) => ({ ...prev, status: value }))
+                    }
                   >
                     <Option value="Not Started">Not Started</Option>
                     <Option value="In Progress">In Progress</Option>
@@ -424,7 +466,9 @@ const HomePage = ({ isLoggedIn, user }) => {
                   <Select
                     allowClear
                     value={filters.priority}
-                    onChange={(value) => setFilters((prev) => ({ ...prev, priority: value }))}
+                    onChange={(value) =>
+                      setFilters((prev) => ({ ...prev, priority: value }))
+                    }
                   >
                     <Option value="High">High</Option>
                     <Option value="Medium">Medium</Option>
@@ -436,14 +480,16 @@ const HomePage = ({ isLoggedIn, user }) => {
                   <DatePicker
                     allowClear
                     value={filters.date}
-                    onChange={(value) => setFilters((prev) => ({ ...prev, date: value }))}
+                    onChange={(value) =>
+                      setFilters((prev) => ({ ...prev, date: value }))
+                    }
                     style={{ width: "100%" }}
                   />
                 </Form.Item>
 
                 <Button
                   onClick={() =>
-                    setFilters({ status: null, priority: null, date: null })
+                    setFilters({ status: undefined, priority: undefined, date: undefined })
                   }
                   style={{ marginTop: "8px" }}
                   block

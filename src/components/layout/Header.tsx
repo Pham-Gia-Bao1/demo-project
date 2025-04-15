@@ -1,10 +1,11 @@
 // src/components/Header.js
 import React from "react";
 import { useSelector } from "react-redux";
-import useAuthHandlers from "../../handlers/useAuthHandlers";
-
-const Header = () => {
-  const { isLoggedIn, user } = useSelector((state) => state.auth);
+import useAuthHandlers from "../../handlers/useAuthHandlers.ts";
+import { RootState } from "../../store/store.ts";
+import { User } from '../../models/Auth.ts'
+const Header: React.FC = () => {
+  const { isLoggedIn, user } = useSelector((state: RootState) => state.auth);
   const {
     showLoginForm,
     credentials,
@@ -41,13 +42,6 @@ const Header = () => {
           {isLoggedIn ? (
             <div className="user-section">
               <div className="user-profile">
-                {user?.avatar && (
-                  <img
-                    src={user.avatar}
-                    alt="Profile"
-                    className="profile-image"
-                  />
-                )}
                 <span>{user?.name}</span>
               </div>
               <button
@@ -68,9 +62,7 @@ const Header = () => {
                 Log In
               </button>
               <button
-                // onClick={handleSignup}
                 className="auth-button signup-button"
-                // disabled={loading}
               >
                 Sign Up 
               </button>

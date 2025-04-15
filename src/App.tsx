@@ -1,13 +1,13 @@
-// src/App.js
 import React from 'react';
 import './App.css';
 import { useSelector } from 'react-redux';
-import Header from './components/layout/Header';
-import HomePage from './components/Home/HomePage';
-import useAuthInitializer from './handlers/useAuthInitializer';
+import Header from '../src/components/layout/Header.tsx';
+import HomePage from '../src/components/Home/HomePage.tsx';
+import useAuthInitializer from '../src/handlers/useAuthInitializer.ts';
+import { RootState } from '../src/store/store.ts';
 
-function App() {
-  const { isLoggedIn, user } = useSelector((state) => state.auth);
+const App: React.FC = () => {
+  const { isLoggedIn, user } = useSelector((state: RootState) => state.auth);
   useAuthInitializer();
 
   return (
@@ -25,6 +25,6 @@ function App() {
       )}
     </div>
   );
-}
+};
 
 export default App;
