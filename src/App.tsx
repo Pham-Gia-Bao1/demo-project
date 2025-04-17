@@ -5,11 +5,9 @@ import Header from '../src/components/layout/Header.tsx';
 import HomePage from '../src/components/Home/HomePage.tsx';
 import useAuthInitializer from '../src/handlers/useAuthInitializer.ts';
 import { RootState } from '../src/store/store.ts';
-
 const App: React.FC = () => {
   const { isLoggedIn, user } = useSelector((state: RootState) => state.auth);
   useAuthInitializer();
-
   return (
     <div className="App">
       <Header />

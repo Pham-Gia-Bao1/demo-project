@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "../../.."
+		},
+		{
+			"path": "../../../../serverless/TaskManagementProject/taskService"
+		},
+		{
+			"path": "../../../../serverless/TaskManagementProject/authService"
+		}
+	],
+	"settings": {
+		"terminal.integrated.suggest.enabled": true
+	}
+}

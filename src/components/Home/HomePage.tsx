@@ -67,10 +67,6 @@ const HomePage: React.FC<HomePageProps> = ({ isLoggedIn, user }) => {
     priority: undefined,
     date: undefined,
   });
-
-  const showSuccess = (msg: string) => message.success(msg);
-  const showError = (msg: string) => message.error(msg);
-
   const {
     handleAddTask,
     handleEditTask,
