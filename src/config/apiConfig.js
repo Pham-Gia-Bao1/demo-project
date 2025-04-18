@@ -3,7 +3,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 // Server URLs
 const SERVER_URL_AUTH = "https://eeduupb2kj.execute-api.us-west-2.amazonaws.com/";
-const SERVER_URL_TASK = "http://localhost:4000/";
+const SERVER_URL_TASK = "https://8ytwecozv8.execute-api.us-west-2.amazonaws.com/";
 // Cookie config
 export const COOKIE_CONFIG = {
   sameSite: "Lax",
