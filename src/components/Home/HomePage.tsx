@@ -11,7 +11,7 @@ import {
   message,
   Card,
   Tag,
-  Typography
+  Typography,
 } from "antd";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment, { Moment } from "moment";
@@ -85,7 +85,7 @@ const HomePage: React.FC<HomePageProps> = ({ isLoggedIn, user }) => {
     setShowEditModal,
     setShowDeleteModal,
     form,
-    editTask,
+    editTask
   );
 
   const handleEditTaskWrapper = (task: Task | null) => {
@@ -121,7 +121,11 @@ const HomePage: React.FC<HomePageProps> = ({ isLoggedIn, user }) => {
         title: task.title,
         start: moment(task.date).toDate(),
         end: moment(task.date).toDate(),
-        resource: { status: task.status, priority: task.priority, zohoId: task.zohoId },
+        resource: {
+          status: task.status,
+          priority: task.priority,
+          zohoId: task.zohoId,
+        },
       }))
     : [];
 
@@ -132,7 +136,10 @@ const HomePage: React.FC<HomePageProps> = ({ isLoggedIn, user }) => {
         ...task,
         date: moment(start).format("YYYY-MM-DD HH:mm"),
       };
-      handleUpdateTask({ preventDefault: () => {} } as React.FormEvent, updatedTask);
+      handleUpdateTask(
+        { preventDefault: () => {} } as React.FormEvent,
+        updatedTask
+      );
     }
   };
 
@@ -160,21 +167,36 @@ const HomePage: React.FC<HomePageProps> = ({ isLoggedIn, user }) => {
       e.stopPropagation();
       handleDeleteTask(event.id);
     };
-  
+
     return (
       <div className="event-card" onClick={() => console.log("Clicked event")}>
+        {/* Header */}
         <div className="event-header">
           <span className="event-title">{event.title}</span>
           <span className="event-delete" onClick={handleDelete}>
             <DeleteOutlined style={{ color: "#e74c3c" }} />
           </span>
         </div>
+
+        {/* Meta Info */}
         <div className="event-meta">
-          <span className="event-tag" style={{ backgroundColor: getStatusColor(event.resource?.status) }}>
+          <span
+            className="event-tag"
+            style={{ backgroundColor: getStatusColor(event.resource?.status) }}
+          >
             {event.resource?.status || "No status"}
           </span>
-          <span className="event-id">#{event.id}</span>
-          <span className="event-zoho">Zoho: {event.resource?.zohoId}</span>
+
+          {event.resource?.priority && (
+            <span className="event-priority">{event.resource.priority}</span>
+          )}
+
+          <div className="event-details">
+            <span className="event-id">#TaskId: <strong>{event.id}</strong></span>
+            {event.resource?.zohoId && (
+              <span className="event-zoho">#ZohoId: <strong>{event.resource.zohoId}</strong></span>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -195,11 +217,28 @@ const HomePage: React.FC<HomePageProps> = ({ isLoggedIn, user }) => {
 
   return (
     <main className="homepage">
-      <h2 style={{ color: "#2c3e50", textAlign: "center", marginBottom: "20px", fontSize: "32px", textShadow: "1px 1px 2px rgba(0,0,0,0.1)" }}>
+      <h2
+        style={{
+          color: "#2c3e50",
+          textAlign: "center",
+          marginBottom: "20px",
+          fontSize: "32px",
+          textShadow: "1px 1px 2px rgba(0,0,0,0.1)",
+        }}
+      >
         Welcome {isLoggedIn && user ? user.name : "Guest"}!
       </h2>
-      <p style={{ textAlign: "center", color: "#7f8c8d", fontSize: "18px", marginBottom: "30px" }}>
-        {isLoggedIn ? "Manage your tasks below:" : "Please log in to manage your tasks."}
+      <p
+        style={{
+          textAlign: "center",
+          color: "#7f8c8d",
+          fontSize: "18px",
+          marginBottom: "30px",
+        }}
+      >
+        {isLoggedIn
+          ? "Manage your tasks below:"
+          : "Please log in to manage your tasks."}
       </p>
 
       {isLoggedIn && (
@@ -489,7 +528,11 @@ const HomePage: React.FC<HomePageProps> = ({ isLoggedIn, user }) => {
 
                 <Button
                   onClick={() =>
-                    setFilters({ status: undefined, priority: undefined, date: undefined })
+                    setFilters({
+                      status: undefined,
+                      priority: undefined,
+                      date: undefined,
+                    })
                   }
                   style={{ marginTop: "8px" }}
                   block

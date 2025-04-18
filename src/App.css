@@ -658,3 +658,7 @@
 .event-zoho {
   color: #888;
 }
+.event-details{
+  display: flex;
+  gap: 4px;
+}
