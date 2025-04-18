@@ -12,6 +12,7 @@ export const taskService = {
     if (token) {
       try {
         const { data: { data } } = await apiTask.get("/tasks");
+        console.log("Fetched tasks:", data);
         return data || [];
       } catch (error) {
         console.error("Error fetching tasks:", error);

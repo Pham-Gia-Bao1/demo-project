@@ -11,6 +11,7 @@ import {
   message,
   Card,
   Tag,
+  Typography
 } from "antd";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment, { Moment } from "moment";
@@ -30,8 +31,8 @@ import { DeleteOutlined } from "@ant-design/icons";
 import { RootState, AppDispatch } from "../../store/store.ts";
 import { Task } from "../../models/Task.ts";
 
-
 const DnDCalendar = withDragAndDrop(Calendar);
+const { Text } = Typography;
 
 const { Option } = Select;
 
@@ -120,7 +121,7 @@ const HomePage: React.FC<HomePageProps> = ({ isLoggedIn, user }) => {
         title: task.title,
         start: moment(task.date).toDate(),
         end: moment(task.date).toDate(),
-        resource: { status: task.status, priority: task.priority },
+        resource: { status: task.status, priority: task.priority, zohoId: task.zohoId },
       }))
     : [];
 
@@ -154,27 +155,30 @@ const HomePage: React.FC<HomePageProps> = ({ isLoggedIn, user }) => {
     setShowAddModal(true);
   };
 
-  const EventComponent: React.FC<{ event: any }> = ({ event }) => (
-    <Card
-      size="small"
-      bordered
-      style={{ marginBottom: 8, backgroundColor: "#ffff" }}
-      title={event.title}
-      extra={
-        <DeleteOutlined
-          onClick={(e) => {
-            e.stopPropagation();
-            handleDeleteTask(event.id);
-          }}
-          className="event-delete-icon"
-        />
-      }
-    >
-      <Tag color={getStatusColor(event.resource?.status)}>
-        {event.resource?.status || "No status"}
-      </Tag>
-    </Card>
-  );
+  const EventComponent: React.FC<{ event: any }> = ({ event }) => {
+    const handleDelete = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      handleDeleteTask(event.id);
+    };
+  
+    return (
+      <div className="event-card" onClick={() => console.log("Clicked event")}>
+        <div className="event-header">
+          <span className="event-title">{event.title}</span>
+          <span className="event-delete" onClick={handleDelete}>
+            <DeleteOutlined style={{ color: "#e74c3c" }} />
+          </span>
+        </div>
+        <div className="event-meta">
+          <span className="event-tag" style={{ backgroundColor: getStatusColor(event.resource?.status) }}>
+            {event.resource?.status || "No status"}
+          </span>
+          <span className="event-id">#{event.id}</span>
+          <span className="event-zoho">Zoho: {event.resource?.zohoId}</span>
+        </div>
+      </div>
+    );
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {

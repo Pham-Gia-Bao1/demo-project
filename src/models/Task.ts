@@ -6,6 +6,7 @@ export type Task = {
   status: string;
   priority: string;
   userId?: string;
+  zohoId?: string | number;
 };
 export interface FilterCriteria {
   status?: string;
