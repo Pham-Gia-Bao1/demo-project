@@ -17,25 +17,27 @@ const ImageUpload: React.FC = () => {
 
   return (
     <div className="upload-container">
-      <div className="image-gallery">
-        {images.map((image, index) => (
-          <div key={index} className="gallery-item">
-            <img
-              src={image}
-              alt={`Uploaded ${index}`}
-              className="gallery-image"
-            />
-            <button
-              className="delete-button"
-              
-            >
-              <BiTrash />
-            </button>
-          </div>
-        ))}
-      </div>
+      {images.length === 0 ? (
+        <p className="no-images-message">There were no images uploaded.</p>
+      ) : (
+        <div className="image-gallery">
+          {images.map((image, index) => (
+            <div key={index} className="gallery-item">
+              <img
+                src={image}
+                alt={`Uploaded ${index}`}
+                className="gallery-image"
+              />
+              <button className="delete-button">
+                <BiTrash />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
+  
 };
 
 export default ImageUpload;
