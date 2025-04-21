@@ -133,14 +133,11 @@ const ImageFilterComponent: React.FC = () => {
         <TabPane tab="VIDEOS" key="6" />
         <TabPane tab="PSD" key="7" />
         <TabPane tab="TEMPLATES" key="8" />
-        <TabPane tab="MOCKUPS" key="9" />
-        <TabPane tab="3D MODELS" key="10" />
-        <TabPane tab="FONTS" key="11" />
       </Tabs>
 
       {/* Filter Section */}
       <div className="filter-section">
-        <Space>
+        <Space className="space-1">
           {/* License Dropdown */}
           <Select<string>
             defaultValue="License"
