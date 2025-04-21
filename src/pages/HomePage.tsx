@@ -17,7 +17,7 @@ import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment, { Moment } from "moment";
 import "moment/locale/vi";
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import useTaskHandlers from "../../handlers/useTaskHandlers.ts";
+import useTaskHandlers from "../handlers/useTaskHandlers.ts";
 import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
 import {
@@ -26,10 +26,10 @@ import {
   filterTaskByPriority,
   filterTaskByDate,
   fetchTasks,
-} from "../../store/taskSlice.ts";
+} from "../store/taskSlice.ts";
 import { DeleteOutlined } from "@ant-design/icons";
-import { RootState, AppDispatch } from "../../store/store.ts";
-import { Task } from "../../models/Task.ts";
+import { RootState, AppDispatch } from "../store/store.ts";
+import { Task } from "../models/Task.ts";
 
 const DnDCalendar = withDragAndDrop(Calendar);
 const { Text } = Typography;

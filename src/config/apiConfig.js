@@ -4,6 +4,7 @@ import Cookies from "js-cookie";
 // Server URLs
 const SERVER_URL_AUTH = "https://eeduupb2kj.execute-api.us-west-2.amazonaws.com/";
 const SERVER_URL_TASK = "https://8ytwecozv8.execute-api.us-west-2.amazonaws.com/";
+const SERVER_IMAGE = "https://ziigtprhz0.execute-api.us-west-2.amazonaws.com";
 // Cookie config
 export const COOKIE_CONFIG = {
   sameSite: "Lax",
@@ -36,6 +37,7 @@ const createAxiosInstance = (baseURL) => {
 // Tạo các API instance
 export const apiAuth = createAxiosInstance(SERVER_URL_AUTH);
 export const apiTask = createAxiosInstance(SERVER_URL_TASK);
+export const apiImage = createAxiosInstance(SERVER_IMAGE);
 // Hàm xử lý token
 export const storeTokens = (accessToken, refreshToken) => {
   Cookies.set("authToken", accessToken, { ...COOKIE_CONFIG, expires: 1 });

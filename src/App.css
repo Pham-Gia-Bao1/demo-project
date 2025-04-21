@@ -662,3 +662,7 @@
   display: flex;
   gap: 4px;
 }
+.file-management-page{
+   padding: 20px;
+   background-color: #ffff;
+}

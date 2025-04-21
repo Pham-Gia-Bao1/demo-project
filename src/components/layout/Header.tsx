@@ -29,11 +29,8 @@ const Header: React.FC = () => {
             alt="logo"
           />
           <nav className="nav-links">
-            <a href="#community">Community</a>
-            <a href="#design">Design resources</a>
-            <a href="#plugins">Plugins</a>
-            <a href="#whiteboarding">Whiteboarding</a>
-            <a href="#presentations">Presentations</a>
+            <a href="/">Home</a>
+            <a href="/upload">Upload Images</a>
           </nav>
         </div>
 
