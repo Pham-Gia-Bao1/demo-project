@@ -17,7 +17,6 @@ const ImageUpload: React.FC = () => {
 
   return (
     <div className="upload-container">
-        <h2 className="title-gallery">Website Management Images</h2>
       <div className="image-gallery">
         {images.map((image, index) => (
           <div key={index} className="gallery-item">

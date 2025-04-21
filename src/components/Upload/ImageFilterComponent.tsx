@@ -79,7 +79,9 @@ const ImageFilterComponent: React.FC = () => {
       setFiles(fileArray);
       const urls = fileArray.map((file) => URL.createObjectURL(file));
       setPreviewUrls(urls);
-      setStatus("");
+      setStatus(`Đã chọn ${fileArray.length} ảnh`);
+    } else {
+      setStatus("Không có ảnh nào được chọn. Vui lòng thử lại.");
     }
   };
 
@@ -93,7 +95,6 @@ const ImageFilterComponent: React.FC = () => {
       setIsUploading(true);
       setStatus("Đang tải ảnh lên...");
 
-      // Upload each file sequentially
       for (const file of files) {
         const url = await uploadImage(file);
         dispatch(addImage(url));
@@ -102,7 +103,7 @@ const ImageFilterComponent: React.FC = () => {
       setStatus("Tải lên thành công!");
       setFiles([]);
       setPreviewUrls([]);
-      setIsModalVisible(false); // Close modal after successful upload
+      setIsModalVisible(false);
     } catch (error: any) {
       setStatus(`Lỗi: ${error.toString()}`);
     } finally {
@@ -122,17 +123,16 @@ const ImageFilterComponent: React.FC = () => {
     }
   };
 
-  // Open modal
   const showModal = () => {
     setIsModalVisible(true);
   };
 
-  // Close modal and reset state
   const handleCancel = () => {
     setIsModalVisible(false);
     setFiles([]);
     setPreviewUrls([]);
     setStatus("");
+    previewUrls.forEach((url) => URL.revokeObjectURL(url));
   };
 
   return (
@@ -151,91 +151,22 @@ const ImageFilterComponent: React.FC = () => {
 
       {/* Filter Section */}
       <div className="filter-section">
-        <Space className="space-1">
-          {/* License Dropdown */}
-          <Select<string>
-            defaultValue="License"
-            style={{ width: 150 }}
-            suffixIcon={<BookOutlined />}
-          >
-            {licenseOptions.map((option) => (
-              <Option key={option.value} value={option.value}>
-                {option.label}
-              </Option>
-            ))}
-          </Select>
-
-          {/* AI-generated Dropdown */}
-          <Select<string>
-            defaultValue="AI-generated"
-            style={{ width: 150 }}
-            suffixIcon={<RobotOutlined />}
-          >
-            {aiGeneratedOptions.map((option) => (
-              <Option key={option.value} value={option.value}>
-                {option.label}
-              </Option>
-            ))}
-          </Select>
-
-          {/* Orientation Dropdown */}
-          <Select<string>
-            defaultValue="Orientation"
-            style={{ width: 150 }}
-            suffixIcon={<PictureOutlined />}
-          >
-            {orientationOptions.map((option) => (
-              <Option key={option.value} value={option.value}>
-                {option.label}
-              </Option>
-            ))}
-          </Select>
-
-          {/* File type Dropdown */}
-          <Select<string>
-            defaultValue="File type"
-            style={{ width: 150 }}
-            suffixIcon={<FileOutlined />}
-          >
-            {fileTypeOptions.map((option) => (
-              <Option key={option.value} value={option.value}>
-                {option.label}
-              </Option>
-            ))}
-          </Select>
-
-          {/* Edit Online Button */}
-          <Button
-            type="default"
-            icon={<EditOutlined />}
-            className="edit-button"
-          >
-            Edit online
-          </Button>
-
-          {/* Advanced Dropdown */}
-          <Select<string>
-            defaultValue="Advanced"
-            style={{ width: 150 }}
-            suffixIcon={<SettingOutlined />}
-          >
-            {advancedOptions.map((option) => (
-              <Option key={option.value} value={option.value}>
-                {option.label}
-              </Option>
-            ))}
-          </Select>
-        </Space>
-
+        <h2 className="title-gallery">Website Management Images</h2>
         {/* Filter and Sort By */}
         <div className="filter-sort">
-          <Button onClick={showModal} icon={<PlusOutlined />}>
+          <Button
+            onClick={showModal}
+            icon={<PlusOutlined />}
+            className="action-button"
+          >
             Add
           </Button>
-          <Button icon={<FilterOutlined />}>Filter</Button>
+          <Button icon={<FilterOutlined />} className="action-button">
+            Filter
+          </Button>
           <Select<string>
             defaultValue="most-relevant"
-            style={{ width: 150 }}
+            className="filter-select"
           >
             {sortByOptions.map((option) => (
               <Option key={option.value} value={option.value}>
@@ -246,13 +177,16 @@ const ImageFilterComponent: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal for uploading images */}
       <Modal
         title="Tải ảnh lên"
         open={isModalVisible}
         onCancel={handleCancel}
         footer={[
-          <Button key="cancel" onClick={handleCancel}>
+          <Button
+            key="cancel"
+            onClick={handleCancel}
+            style={{ marginRight: 8 }} // Add spacing between buttons
+          >
             Hủy
           </Button>,
           <Button
@@ -265,32 +199,58 @@ const ImageFilterComponent: React.FC = () => {
             Tải lên
           </Button>,
         ]}
+        className="upload-modal"
       >
-        <input
-          type="file"
-          accept="image/*"
-          multiple // Allow multiple file selection
-          onChange={handleFileChange}
-          className="file-input"
-        />
+        <div className="upload-modal-body">
+          <label className="file-input-label">
+            <span>Chọn nhiều ảnh từ thư viện:</span>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleFileChange}
+              className="file-input"
+            //   style={{ width: "100%", marginTop: 8 }} // Ensure input takes full width
+            />
+          </label>
 
-        {previewUrls.length > 0 && (
-          <div className="preview-section">
-            <p className="preview-label">Xem trước:</p>
-            <div className="preview-grid">
-              {previewUrls.map((url, index) => (
-                <img
-                  key={index}
-                  src={url}
-                  alt={`Preview ${index + 1}`}
-                  className="preview-image"
-                />
-              ))}
+          {previewUrls.length > 0 && (
+            <div className="preview-section" style={{ marginTop: 16 }}>
+              <p className="preview-label">
+                Xem trước ({previewUrls.length} ảnh):
+              </p>
+              <div
+                className="preview-grid"
+                style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "space-between" }}
+              >
+                {previewUrls.map((url, index) => (
+                  <img
+                    key={index}
+                    src={url}
+                    alt={`Preview ${index + 1}`}
+                    style={{
+                      width: 100,
+                      height: 100,
+                      objectFit: "cover",
+                      borderRadius: 4,
+                    }}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {status && <p className="status-text">{status}</p>}
+          {status && (
+            <p
+              style={{
+                marginTop: 16,
+                color: status.includes("Lỗi") ? "red" : "green",
+              }}
+            >
+              {status}
+            </p>
+          )}
+        </div>
       </Modal>
     </div>
   );
