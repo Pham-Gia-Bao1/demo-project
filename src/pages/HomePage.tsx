@@ -340,6 +340,15 @@ const HomePage: React.FC<HomePageProps> = ({ isLoggedIn, user }) => {
                   onChange={(date) => setSelectedDate(date)}
                 />
               </Form.Item>
+              <Form.Item
+                name="contactName"
+                label="Contact Name"
+                rules={[
+                  { required: true, message: "Please enter the contact name!" },
+                ]}
+              >
+                <Input placeholder="Contact Name" />
+              </Form.Item>
               <Form.Item>
                 <Space>
                   <Button type="primary" htmlType="submit" disabled={loading}>
@@ -355,6 +364,8 @@ const HomePage: React.FC<HomePageProps> = ({ isLoggedIn, user }) => {
               </Form.Item>
             </Form>
           </Modal>
+
+          {/* Edit Task Modal */}
           {/* Edit Task Modal */}
           <Modal
             title={
