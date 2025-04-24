@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { taskService } from "../services/taskService.ts";
 import { message } from "antd";
 import { Task } from "../models/Task.ts";
@@ -77,6 +77,16 @@ const taskSlice = createSlice({
     resetTasks: (state) => {
       state.tasks = [];
     },
+    updateTaskZohoId: (
+      state,
+      action: PayloadAction<{ taskId: string; zohoId: string }>
+    ) => {
+      const { taskId, zohoId } = action.payload;
+      state.tasks = state.tasks.map((task) =>
+        task.id === taskId ? { ...task, zohoId } : task
+      );
+      console.log("helloasdhajksdhaskjh",state.tasks);
+    },
     sortTasks: (state, action) => {
       const { key, order } = action.payload;
       state.tasks = [...state.tasks].sort((a, b) =>
@@ -92,6 +102,9 @@ const taskSlice = createSlice({
             : task.date.format("YYYY-MM-DD")
           : null, // Handle null case for task.date
       }));
+    },
+    setNewTasks: (state, action) => {
+       state.tasks = action.payload
     },
     setLoading: (state, action) => {
       state.loading = action.payload; // Set loading state
@@ -169,6 +182,8 @@ export const {
   setTasks,
   sortTasks,
   setLoading,
+  updateTaskZohoId,
+  setNewTasks
 } = taskSlice.actions;
 
 export default taskSlice.reducer;

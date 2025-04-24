@@ -11,7 +11,9 @@ export const taskService = {
     const token = taskService.getToken();
     if (token) {
       try {
-        const { data: { data } } = await apiTask.get("/tasks");
+        const {
+          data: { data },
+        } = await apiTask.get("/tasks");
         console.log("Fetched tasks:", data);
         return data || [];
       } catch (error) {
@@ -21,9 +23,21 @@ export const taskService = {
     }
     return null;
   },
-  addTask: async (tasks: Task[], newTask: Omit<Task, 'id'>): Promise<Task[]> => {
-    if (!newTask.title || !newTask.date || !newTask.status || !newTask.priority) {
-      console.error("Invalid task data provided. All fields are required:", newTask);
+  addTask: async (
+    tasks: Task[],
+    newTask: Omit<Task, "id">
+  ): Promise<Task[]> => {
+    if (
+      !newTask.title ||
+      !newTask.date ||
+      !newTask.status ||
+      !newTask.priority ||
+      !newTask.contactName
+    ) {
+      console.error(
+        "Invalid task data provided. All fields are required:",
+        newTask
+      );
       return tasks;
     }
 
@@ -40,9 +54,17 @@ export const taskService = {
 
     return tasks;
   },
+
   updateTask: async (tasks: Task[], updatedTask: Task): Promise<Task[]> => {
-    if (!updatedTask.title || !updatedTask.date) {
-      console.error("Invalid task data. Title and date are required.", updatedTask);
+    if (
+      !updatedTask.title ||
+      !updatedTask.date 
+  
+    ) {
+      console.error(
+        "Invalid task data. Title, date, contact info are required.",
+        updatedTask
+      );
       return tasks;
     }
 
@@ -53,7 +75,10 @@ export const taskService = {
         return tasks;
       }
 
-      const { data } = await apiTask.put(`/tasks/${updatedTask.id}`, updatedTask);
+      const { data } = await apiTask.put(
+        `/tasks/${updatedTask.id}`,
+        updatedTask
+      );
       return tasks.map((task) =>
         task.id === updatedTask.id ? { ...task, ...data } : task
       );
@@ -62,6 +87,7 @@ export const taskService = {
       return tasks;
     }
   },
+
   deleteTask: async (tasks: Task[], id: string): Promise<Task[]> => {
     try {
       const token = taskService.getToken();

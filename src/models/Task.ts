@@ -7,7 +7,9 @@ export type Task = {
   priority: string;
   userId?: string;
   zohoId?: string | number;
+  contactName?: string;
 };
+
 export interface FilterCriteria {
   status?: string;
   priority?: string;

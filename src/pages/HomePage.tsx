@@ -192,9 +192,10 @@ const HomePage: React.FC<HomePageProps> = ({ isLoggedIn, user }) => {
           )}
 
           <div className="event-details">
-            <span className="event-id">#TaskId: <strong>{event.id}</strong></span>
             {event.resource?.zohoId && (
-              <span className="event-zoho">#ZohoId: <strong>{event.resource.zohoId}</strong></span>
+              <span className="event-priority">
+                #ZohoId: <strong>{event.resource.zohoId}</strong>
+              </span>
             )}
           </div>
         </div>
@@ -354,7 +355,6 @@ const HomePage: React.FC<HomePageProps> = ({ isLoggedIn, user }) => {
               </Form.Item>
             </Form>
           </Modal>
-
           {/* Edit Task Modal */}
           <Modal
             title={
@@ -370,7 +370,10 @@ const HomePage: React.FC<HomePageProps> = ({ isLoggedIn, user }) => {
               form={form}
               onFinish={handleEditSubmit}
               layout="vertical"
-              initialValues={editTask || undefined} // Convert null to undefined
+              initialValues={{
+                ...editTask,
+                date: editTask?.date ? moment(editTask.date) : undefined,
+              }}
             >
               <Form.Item
                 name="title"
@@ -419,6 +422,24 @@ const HomePage: React.FC<HomePageProps> = ({ isLoggedIn, user }) => {
                   value={selectedDate}
                   onChange={(date) => setSelectedDate(date)}
                 />
+              </Form.Item>
+              <Form.Item
+                name="contactName"
+                label="Contact Name"
+                rules={[
+                  { required: true, message: "Please enter the contact name!" },
+                ]}
+              >
+                <Input placeholder="Contact Name" />
+              </Form.Item>
+              <Form.Item
+                name="contactId"
+                label="Contact ID"
+                rules={[
+                  { required: true, message: "Please enter the contact ID!" },
+                ]}
+              >
+                <Input placeholder="Contact ID" />
               </Form.Item>
               <Form.Item>
                 <Space>

@@ -31,6 +31,7 @@ const Header: React.FC = () => {
           <nav className="nav-links">
             <a href="/">Home</a>
             <a href="/upload">Upload Images</a>
+            <a href="/socket">Socket</a>
           </nav>
         </div>
 
