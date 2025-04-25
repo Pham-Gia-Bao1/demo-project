@@ -31,7 +31,7 @@ const EventComponent: React.FC<EventComponentProps> = ({
 
     const timer = setTimeout(() => {
       setError(true);
-    }, 20000);
+    }, 40000);
 
     if (event.resource?.zohoId) {
       setZohoId(event.resource.zohoId);
