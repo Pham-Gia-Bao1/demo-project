@@ -8,9 +8,6 @@ import {
   Select,
   Space,
   DatePicker,
-  message,
-  Card,
-  Tag,
   Typography,
 } from "antd";
 import { Calendar, momentLocalizer } from "react-big-calendar";
@@ -27,9 +24,9 @@ import {
   filterTaskByDate,
   fetchTasks,
 } from "../store/taskSlice.ts";
-import { DeleteOutlined } from "@ant-design/icons";
 import { RootState, AppDispatch } from "../store/store.ts";
 import { Task } from "../models/Task.ts";
+import EventComponent from "../components/EventComponent.tsx"
 
 const DnDCalendar = withDragAndDrop(Calendar);
 const { Text } = Typography;
@@ -162,59 +159,7 @@ const HomePage: React.FC<HomePageProps> = ({ isLoggedIn, user }) => {
     setShowAddModal(true);
   };
 
-  const EventComponent: React.FC<{ event: any }> = ({ event }) => {
-    const handleDelete = (e: React.MouseEvent) => {
-      e.stopPropagation();
-      handleDeleteTask(event.id);
-    };
 
-    return (
-      <div className="event-card" onClick={() => console.log("Clicked event")}>
-        {/* Header */}
-        <div className="event-header">
-          <span className="event-title">{event.title}</span>
-          <span className="event-delete" onClick={handleDelete}>
-            <DeleteOutlined style={{ color: "#e74c3c" }} />
-          </span>
-        </div>
-
-        {/* Meta Info */}
-        <div className="event-meta">
-          <span
-            className="event-tag"
-            style={{ backgroundColor: getStatusColor(event.resource?.status) }}
-          >
-            {event.resource?.status || "No status"}
-          </span>
-
-          {event.resource?.priority && (
-            <span className="event-priority">{event.resource.priority}</span>
-          )}
-
-          <div className="event-details">
-            {event.resource?.zohoId && (
-              <span className="event-priority">
-                #ZohoId: <strong>{event.resource.zohoId}</strong>
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Not Started":
-        return "#f39c12";
-      case "In Progress":
-        return "#3498db";
-      case "Completed":
-        return "#2ecc71";
-      default:
-        return "#95a5a6";
-    }
-  };
 
   return (
     <main className="homepage">

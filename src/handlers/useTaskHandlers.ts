@@ -72,8 +72,14 @@ const useTaskHandlers: UseTaskHandlers = (
   useEffect(() => {
     if (messages.length > 0) {
       const latestMessage = messages[messages.length - 1];
-      const taskToUpdate = tasks.find((task) => task.zohoId === null || task.zohoId === "");
-      if (taskToUpdate && latestMessage?.zohoId) {
+      console.log("lastMEssage", latestMessage);
+  
+      const taskToUpdate = tasks.find((task) => task.id === latestMessage.taskId);
+  
+      console.log("taskToUpdate", taskToUpdate);
+  
+      if (taskToUpdate && !taskToUpdate.zohoId && latestMessage.zohoId) {
+        console.log("lates ZOHO id", latestMessage.zohoId);
         dispatch(updateTaskZohoId({
           taskId: taskToUpdate.id,
           zohoId: latestMessage.zohoId,
@@ -81,6 +87,7 @@ const useTaskHandlers: UseTaskHandlers = (
       }
     }
   }, [tasks, messages, dispatch]);
+  
   const resetAddForm = () => setNewTask(initialTask);
   const handleAddTask = async (e: React.FormEvent, taskData: Task) => {
     e.preventDefault();

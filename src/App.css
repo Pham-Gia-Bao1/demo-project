@@ -639,9 +639,10 @@
 
 .event-meta {
   display: flex;
+  flex-direction: column;
   flex-wrap: wrap;
   gap: 8px;
-  align-items: center;
+  align-items: start;
   font-size: 12px;
   color: #555;
 }
@@ -665,4 +666,34 @@
 .file-management-page{
    padding: 20px;
    background-color: #ffff;
+}
+
+.loader {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  display: inline-block;
+  color: #130f0f;
+  box-sizing: border-box;
+  animation: animloader 1s linear infinite alternate;
+  margin-left: 20px;
+}
+
+@keyframes animloader {
+  0% {
+    box-shadow: -18px -4px, -6px 4px, 6px -4px;
+  }
+  33% {
+    box-shadow: -18px 4px, -6px -4px, 6px 4px;
+  }
+  66% {
+    box-shadow: -18px -4px, -6px 4px, 6px -4px;
+  }
+  100% {
+    box-shadow: -18px 4px, -6px -4px, 6px 4px;
+  }
+}
+
+.event-priority-2 {
+   font-size: 12px;
 }

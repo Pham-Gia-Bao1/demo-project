@@ -8,7 +8,6 @@ import UploadComponent from '../src/components/Upload/UploadComponent.tsx';
 import useAuthInitializer from '../src/handlers/useAuthInitializer.ts';
 import { RootState } from '../src/store/store.ts';
 import FileManagementPage from './pages/FileManagementPage.tsx';
-import WebSocketDemo from "../src/components/TaskSocketListener.tsx"
 
 const App: React.FC = () => {
   const { isLoggedIn, user } = useSelector((state: RootState) => state.auth);
@@ -37,7 +36,6 @@ const App: React.FC = () => {
           }
         />
         <Route path="/upload" element={<FileManagementPage />} />
-        <Route path="/socket" element={<WebSocketDemo />} />
         {/* Add more routes as needed */}
       </Routes>
     </div>

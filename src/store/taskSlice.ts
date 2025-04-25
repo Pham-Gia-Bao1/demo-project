@@ -85,7 +85,6 @@ const taskSlice = createSlice({
       state.tasks = state.tasks.map((task) =>
         task.id === taskId ? { ...task, zohoId } : task
       );
-      console.log("helloasdhajksdhaskjh",state.tasks);
     },
     sortTasks: (state, action) => {
       const { key, order } = action.payload;
