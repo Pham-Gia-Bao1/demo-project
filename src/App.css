@@ -502,7 +502,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   flex: 1;
-  color: #000
+  color: #000;
+  text-align: start;
 }
 
 .event-delete-icon {
